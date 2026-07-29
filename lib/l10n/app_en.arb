@@ -1,0 +1,73 @@
+{
+  "@@locale": "en",
+  "appName": "Krishidnya",
+  "@appName": {
+    "description": "Application name"
+  },
+  "appTagline": "Your trusted farming companion",
+  "onboardingPage1Title": "Every season brings challenges",
+  "onboardingPage1Subtitle": "Unpredictable weather, crop diseases, and rising costs make farming harder every day.",
+  "onboardingPage2Title": "Technology can help",
+  "onboardingPage2Subtitle": "Smart insights and real-time data can turn uncertainty into informed decisions.",
+  "onboardingPage3Title": "AI becomes your partner",
+  "onboardingPage3Subtitle": "Detect diseases early, track your crops, and get personalized recommendations.",
+  "onboardingPage4Title": "Welcome to Krishidnya",
+  "onboardingPage4Subtitle": "Your farm, understood. Let's grow together.",
+  "getStarted": "Get Started",
+  "skip": "Skip",
+  "next": "Next",
+  "login": "Login",
+  "register": "Create Account",
+  "welcomeBack": "Welcome back",
+  "loginSubtitle": "Sign in to continue your farming journey",
+  "mobileNumber": "Mobile Number",
+  "password": "Password",
+  "fullName": "Full Name",
+  "email": "Email",
+  "confirmPassword": "Confirm Password",
+  "forgotPassword": "Forgot Password?",
+  "dontHaveAccount": "Don't have an account?",
+  "alreadyHaveAccount": "Already have an account?",
+  "createAccountTitle": "Let's get to know you",
+  "createAccountSubtitle": "Tell us a little about yourself to personalize your experience",
+  "locationPermissionTitle": "Help us understand your farm",
+  "locationPermissionSubtitle": "Your location helps us provide accurate weather, crop advice, and local insights.",
+  "locationPermissionAllow": "Allow Location",
+  "locationPermissionSkip": "Skip for now",
+  "locationLoading": "Looking at your surroundings...",
+  "locationFound": "We found your location",
+  "almostReady": "Almost ready",
+  "almostReadySubtitle": "We're setting up your personalized farming dashboard",
+  "accountCreated": "Your farm is now connected",
+  "accountCreatedSubtitle": "Welcome to Krishidnya. Let's begin your journey.",
+  "continueLabel": "Continue",
+  "dashboardGreeting": "Good {timeOfDay}, {name}",
+  "@dashboardGreeting": {
+    "placeholders": {
+      "timeOfDay": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "morning": "morning",
+  "afternoon": "afternoon",
+  "evening": "evening",
+  "todaysWeather": "Today's Weather",
+  "farmStatus": "Farm Status",
+  "cropStage": "Crop Stage",
+  "recommendations": "Recommendations",
+  "preparingInsights": "Preparing today's farming insights...",
+  "checkingSky": "Looking at today's sky...",
+  "checkingCropHealth": "Checking your crop's health...",
+  "errorGeneric": "Something went wrong. Please try again.",
+  "errorNetwork": "No internet connection. Please check your network.",
+  "retry": "Try Again",
+  "home": "Home",
+  "farm": "Farm",
+  "scan": "Scan",
+  "analytics": "Analytics",
+  "profile": "Profile"
+}

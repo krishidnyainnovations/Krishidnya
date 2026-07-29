@@ -1,0 +1,70 @@
+name: krishidnya
+description: Krishidnya (CropDoc) — Your trusted digital farming companion.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Routing
+  go_router: ^14.8.1
+
+  # Networking
+  dio: ^5.8.0+1
+  connectivity_plus: ^6.1.4
+
+  # Storage
+  flutter_secure_storage: ^9.2.4
+  shared_preferences: ^2.5.3
+
+  # Serialization
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+
+  # Location
+  geolocator: ^13.0.4
+  geocoding: ^3.0.0
+  permission_handler: ^11.4.0
+
+  # UI & Motion
+  flutter_animate: ^4.5.2
+  shimmer: ^3.0.0
+  cached_network_image: ^3.4.1
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.17
+  smooth_page_indicator: ^1.2.1
+  animations: ^2.0.11
+
+  # Utils
+  intl: ^0.20.2
+  equatable: ^2.0.7
+  logger: ^2.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^7.0.0
+  build_runner: ^2.4.15
+  freezed: ^3.0.0
+  json_serializable: ^6.9.4
+  riverpod_generator: ^2.6.5
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/illustrations/
