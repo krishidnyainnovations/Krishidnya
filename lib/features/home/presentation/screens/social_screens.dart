@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:go_router/go_router.dart';
 import 'package:krishidnya/core/errors/exception_mapper.dart';
+import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
+import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
+import 'package:krishidnya/features/home/presentation/screens/feature_screens.dart';
+import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 import 'package:krishidnya/widgets/feedback/empty_state_widget.dart';
+import 'package:krishidnya/widgets/inputs/app_text_field.dart';
 
 /// AI farming assistant chat.
 class ChatScreen extends ConsumerStatefulWidget {
@@ -21,6 +26,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _scrollController = ScrollController();
   final _messages = <_ChatMessage>[];
   var _loading = false;
+  final _conversationHistory = <Map<String, String>>[];
 
   @override
   void dispose() {
@@ -39,7 +45,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
     _controller.clear();
 
-    final result = await ref.read(homeRepositoryProvider).chat(text);
+    final result = await ref.read(homeRepositoryProvider).chat(
+          text,
+          history: _conversationHistory,
+        );
 
     if (!mounted) return;
     setState(() {
@@ -50,8 +59,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               data['message'] as String? ??
               data.toString();
           _messages.add(_ChatMessage(text: reply, isUser: false));
+          _conversationHistory.add({'role': 'user', 'content': text});
+          _conversationHistory.add({'role': 'assistant', 'content': reply});
         case ErrorResult(:final failure):
-          AppSnackBar.error(context, failure.message);
+          _messages.add(
+            _ChatMessage(
+              text: failure.message,
+              isUser: false,
+              isError: true,
+            ),
+          );
       }
     });
 
@@ -138,9 +155,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 }
 
 class _ChatMessage {
-  _ChatMessage({required this.text, required this.isUser});
+  _ChatMessage({
+    required this.text,
+    required this.isUser,
+    this.isError = false,
+  });
+
   final String text;
   final bool isUser;
+  final bool isError;
 }
 
 class _ChatBubble extends StatelessWidget {
@@ -159,15 +182,24 @@ class _ChatBubble extends StatelessWidget {
           maxWidth: MediaQuery.of(context).size.width * 0.78,
         ),
         decoration: BoxDecoration(
-          color: message.isUser
-              ? AppColors.primary
-              : AppColors.surfaceVariant,
+          color: message.isError
+              ? AppColors.error.withValues(alpha: 0.12)
+              : message.isUser
+                  ? AppColors.primary
+                  : AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(16),
+          border: message.isError
+              ? Border.all(color: AppColors.error.withValues(alpha: 0.4))
+              : null,
         ),
         child: Text(
           message.text,
           style: TextStyle(
-            color: message.isUser ? Colors.white : AppColors.textPrimary,
+            color: message.isError
+                ? AppColors.error
+                : message.isUser
+                    ? Colors.white
+                    : AppColors.textPrimary,
           ),
         ),
       ),
@@ -189,7 +221,7 @@ class CommunityScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            onPressed: () {},
+            onPressed: () => _showCreatePost(context, ref),
           ),
         ],
       ),
@@ -281,31 +313,70 @@ class CommunityScreen extends ConsumerWidget {
       ),
     );
   }
+
+  void _showCreatePost(BuildContext context, WidgetRef ref) {
+    final titleCtrl = TextEditingController();
+    final contentCtrl = TextEditingController();
+    final categoryCtrl = TextEditingController(text: 'Crop Update');
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          top: AppSpacing.lg,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Share Update', style: Theme.of(ctx).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.md),
+            AppTextField(label: 'Title (optional)', controller: titleCtrl),
+            const SizedBox(height: AppSpacing.sm),
+            AppTextField(label: 'Category', controller: categoryCtrl),
+            const SizedBox(height: AppSpacing.sm),
+            AppTextField(label: 'What\'s happening on your farm?', controller: contentCtrl),
+            const SizedBox(height: AppSpacing.lg),
+            PrimaryButton(
+              label: 'Post',
+              onPressed: () async {
+                if (contentCtrl.text.trim().isEmpty) {
+                  AppSnackBar.error(ctx, 'Write something to share');
+                  return;
+                }
+                final result = await ref.read(homeRepositoryProvider).createPost(
+                      content: contentCtrl.text.trim(),
+                      title: titleCtrl.text.trim().isEmpty ? null : titleCtrl.text.trim(),
+                      category: categoryCtrl.text.trim(),
+                    );
+                if (!ctx.mounted) return;
+                switch (result) {
+                  case Success():
+                    Navigator.pop(ctx);
+                    ref.invalidate(communityPostsProvider);
+                    AppSnackBar.success(context, 'Post shared!');
+                  case ErrorResult(:final failure):
+                    AppSnackBar.error(context, failure.message);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-/// Scan crop for disease detection.
+/// Scan crop for disease detection — uses shared feature screen.
 class ScanCropScreen extends StatelessWidget {
   const ScanCropScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Scan Crop')),
-      body: const EmptyStateWidget(
-        title: 'Scan your crop',
-        subtitle:
-            'Take a photo of affected leaves. Our AI detects diseases and '
-            'suggests organic & chemical cures with exact dosages.',
-        icon: Icons.camera_alt_outlined,
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.camera_alt_rounded),
-        label: const Text('Take Photo'),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const ScanCropFeatureScreen();
 }
 
 /// User profile and settings.
@@ -358,14 +429,26 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: AppSpacing.xl),
-            _ProfileTile(icon: Icons.settings_outlined, title: 'App Settings'),
             _ProfileTile(
-                icon: Icons.description_outlined, title: 'Terms & Conditions'),
-            _ProfileTile(icon: Icons.privacy_tip_outlined, title: 'Privacy Policy'),
+              icon: Icons.settings_outlined,
+              title: 'App Settings',
+              onTap: () => context.push(AppRoutes.settings),
+            ),
+            _ProfileTile(
+              icon: Icons.description_outlined,
+              title: 'Terms & Conditions',
+              onTap: () => context.push(AppRoutes.settings),
+            ),
+            _ProfileTile(
+              icon: Icons.privacy_tip_outlined,
+              title: 'Privacy Policy',
+              onTap: () => context.push(AppRoutes.settings),
+            ),
             _ProfileTile(
               icon: Icons.delete_outline,
               title: 'Delete Account',
               color: AppColors.error,
+              onTap: () => context.push(AppRoutes.settings),
             ),
           ],
         ),
@@ -378,11 +461,13 @@ class _ProfileTile extends StatelessWidget {
   const _ProfileTile({
     required this.icon,
     required this.title,
+    required this.onTap,
     this.color,
   });
 
   final IconData icon;
   final String title;
+  final VoidCallback onTap;
   final Color? color;
 
   @override
@@ -393,7 +478,7 @@ class _ProfileTile extends StatelessWidget {
         leading: Icon(icon, color: color ?? AppColors.primary),
         title: Text(title, style: TextStyle(color: color)),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () {},
+        onTap: onTap,
       ),
     );
   }

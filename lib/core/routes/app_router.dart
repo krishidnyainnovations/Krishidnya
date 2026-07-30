@@ -11,16 +11,35 @@ import 'package:krishidnya/features/auth/presentation/screens/onboarding_screen.
 import 'package:krishidnya/features/auth/presentation/screens/register_screen.dart';
 import 'package:krishidnya/features/auth/presentation/screens/registration_journey_screens.dart';
 import 'package:krishidnya/widgets/common/app_logo.dart';
+import 'package:krishidnya/features/home/presentation/screens/feature_screens.dart';
+import 'package:krishidnya/features/home/presentation/screens/schemes_screen.dart';
+import 'package:krishidnya/features/home/presentation/screens/settings_screen.dart';
+import 'package:krishidnya/features/home/presentation/screens/weather_forecast_screen.dart';
 import 'package:krishidnya/widgets/navigation/main_shell.dart';
+
+/// Keeps GoRouter alive while re-running redirects on auth changes.
+class _RouterRefreshNotifier extends ChangeNotifier {
+  _RouterRefreshNotifier(Ref ref) {
+    ref.listen(authStatusProvider, (_, __) => notifyListeners());
+  }
+}
+
+final _routerRefreshNotifierProvider = Provider<_RouterRefreshNotifier>((ref) {
+  final notifier = _RouterRefreshNotifier(ref);
+  ref.onDispose(notifier.dispose);
+  return notifier;
+});
 
 /// GoRouter configuration with auth-aware redirects.
 final routerProvider = Provider<GoRouter>((ref) {
-  final authStatus = ref.watch(authStatusProvider);
+  final refreshNotifier = ref.watch(_routerRefreshNotifierProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
+      final authStatus = ref.read(authStatusProvider);
       final isAuthenticated = authStatus.valueOrNull ?? false;
       final location = state.matchedLocation;
 
@@ -133,6 +152,69 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.logMonitor,
         builder: (context, state) => const LogMonitorScreen(),
       ),
+      GoRoute(
+        path: AppRoutes.schemes,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const SchemesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.weatherForecast,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const WeatherForecastScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.cropRecommendation,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const CropRecommendationScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.scanCrop,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const ScanCropFeatureScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.marketplace,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const MarketplaceScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.history,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const HistoryScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.mandiPrices,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const MandiPricesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.analytics,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const AnalyticsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const SettingsScreen(),
+        ),
+      ),
     ],
   );
 });
@@ -161,22 +243,11 @@ CustomTransitionPage<void> _sharedAxisPage(GoRouterState state, Widget child) {
 }
 
 /// Splash screen with animated logo while checking auth.
-class SplashScreen extends ConsumerWidget {
+class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(authStatusProvider, (prev, next) {
-      if (next.hasValue) {
-        final router = ref.read(routerProvider);
-        if (next.value ?? false) {
-          router.go(AppRoutes.dashboard);
-        } else {
-          router.go(AppRoutes.onboarding);
-        }
-      }
-    });
-
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(

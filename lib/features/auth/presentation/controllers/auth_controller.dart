@@ -292,3 +292,9 @@ final authStatusProvider = FutureProvider<bool>((ref) async {
   final repository = ref.watch(authRepositoryProvider);
   return repository.isAuthenticated();
 });
+
+/// Refreshes cached auth state after login or registration.
+Future<void> refreshAuthSession(WidgetRef ref) async {
+  ref.invalidate(currentUserProvider);
+  await ref.refresh(authStatusProvider.future);
+}

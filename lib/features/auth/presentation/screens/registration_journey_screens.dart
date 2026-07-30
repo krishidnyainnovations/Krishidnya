@@ -221,7 +221,9 @@ class AlmostReadyScreen extends ConsumerWidget {
 
     ref.listen(registrationControllerProvider, (prev, next) {
       if (next.step == RegistrationStep.success) {
-        context.pushReplacement(AppRoutes.registerSuccess);
+        refreshAuthSession(ref).then((_) {
+          if (context.mounted) context.go(AppRoutes.dashboard);
+        });
       } else if (next.error != null && prev?.step != RegistrationStep.createAccount) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(next.error!.message)),
@@ -301,7 +303,10 @@ class RegisterSuccessScreen extends ConsumerWidget {
               PrimaryButton(
                 label: 'Enter Dashboard',
                 icon: Icons.arrow_forward_rounded,
-                onPressed: () => context.go(AppRoutes.dashboard),
+                onPressed: () async {
+                  await refreshAuthSession(ref);
+                  if (context.mounted) context.go(AppRoutes.dashboard);
+                },
               ).animate().fadeIn(delay: 700.ms),
             ],
           ),

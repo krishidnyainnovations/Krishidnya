@@ -50,6 +50,13 @@ abstract final class ExceptionMapper {
       return ValidationFailure(message);
     }
 
+    if (statusCode == 429) {
+      return ServerFailure(
+        'AI assistant is busy right now. Please try again in a moment.',
+        statusCode: statusCode,
+      );
+    }
+
     return ServerFailure(message, statusCode: statusCode);
   }
 

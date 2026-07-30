@@ -4,7 +4,6 @@ import 'package:krishidnya/features/auth/presentation/controllers/auth_controlle
 import 'package:krishidnya/core/errors/exception_mapper.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';

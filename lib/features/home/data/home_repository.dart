@@ -134,6 +134,42 @@ class HomeRemoteDataSource {
     );
     return response.data ?? {};
   }
+
+  Future<Map<String, dynamic>> createPost({
+    required String content,
+    String? title,
+    String category = 'Discussion',
+  }) async {
+    final response = await _client.post<Map<String, dynamic>>(
+      ApiConfig.posts,
+      data: {
+        'content': content,
+        if (title != null) 'title': title,
+        'category': category,
+      },
+    );
+    return response.data ?? {};
+  }
+
+  Future<Map<String, dynamic>> createProduct({
+    required String name,
+    required String category,
+    required double price,
+    required String unit,
+    String? description,
+  }) async {
+    final response = await _client.post<Map<String, dynamic>>(
+      ApiConfig.products,
+      data: {
+        'name': name,
+        'category': category,
+        'price': price,
+        'unit': unit,
+        if (description != null) 'description': description,
+      },
+    );
+    return response.data ?? {};
+  }
 }
 
 /// Repository wrapping home data source with error mapping.
@@ -219,9 +255,104 @@ class HomeRepository {
     }
   }
 
-  Future<Result<Map<String, dynamic>>> chat(String message) async {
+  Future<Result<Map<String, dynamic>>> chat(
+    String message, {
+    List<Map<String, String>>? history,
+  }) async {
     try {
-      return Success(await _remote.sendChatMessage(message: message));
+      return Success(await _remote.sendChatMessage(
+        message: message,
+        history: history,
+      ));
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> scanCropImage(String filePath) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath),
+      });
+      return Success(await _remote.scanCrop(formData: formData));
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> getCropRecommendations({
+    required String soilType,
+    required String season,
+    required String watering,
+    required double area,
+    required String location,
+    String? weatherSummary,
+  }) async {
+    final prompt = '''
+You are an expert agricultural advisor for Indian farmers.
+Based on the following farm data, recommend exactly 4 crops suitable for this farmer.
+Respond ONLY with valid JSON (no markdown) in this format:
+{
+  "weather_analysis": {"temperature": "...", "humidity": "...", "expected_rain": "..."},
+  "crops": [
+    {
+      "name": "Crop Name",
+      "why": "Why grow this crop",
+      "water_required": "...",
+      "days_to_harvest": "...",
+      "growing_period": "...",
+      "expected_profit": "..."
+    }
+  ]
+}
+
+Farm data:
+- Soil type: $soilType
+- Season: $season
+- Watering method: $watering
+- Farm area: $area acres
+- Location: $location
+${weatherSummary != null ? '- Current weather: $weatherSummary' : ''}
+''';
+
+    try {
+      return Success(await _remote.sendChatMessage(message: prompt));
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> createPost({
+    required String content,
+    String? title,
+    String category = 'Discussion',
+  }) async {
+    try {
+      return Success(await _remote.createPost(
+        content: content,
+        title: title,
+        category: category,
+      ));
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> createProduct({
+    required String name,
+    required String category,
+    required double price,
+    required String unit,
+    String? description,
+  }) async {
+    try {
+      return Success(await _remote.createProduct(
+        name: name,
+        category: category,
+        price: price,
+        unit: unit,
+        description: description,
+      ));
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }

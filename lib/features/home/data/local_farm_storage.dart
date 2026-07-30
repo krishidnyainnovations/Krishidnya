@@ -1,0 +1,196 @@
+import 'dart:convert';
+
+import 'package:krishidnya/core/storage/preferences_service.dart';
+
+/// A single expense entry in the farm logbook.
+class FarmExpense {
+  FarmExpense({
+    required this.type,
+    required this.date,
+    required this.description,
+    required this.amount,
+  });
+
+  factory FarmExpense.fromJson(Map<String, dynamic> json) => FarmExpense(
+        type: json['type'] as String? ?? '',
+        date: json['date'] as String? ?? '',
+        description: json['description'] as String? ?? '',
+        amount: (json['amount'] as num?)?.toDouble() ?? 0,
+      );
+
+  final String type;
+  final String date;
+  final String description;
+  final double amount;
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        'date': date,
+        'description': description,
+        'amount': amount,
+      };
+}
+
+/// A crop tracked in farm analytics.
+class FarmCrop {
+  FarmCrop({
+    required this.id,
+    required this.name,
+    required this.area,
+    required this.sowingDate,
+    this.expenses = const [],
+    this.sellingValue,
+  });
+
+  factory FarmCrop.fromJson(Map<String, dynamic> json) => FarmCrop(
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? '',
+        area: (json['area'] as num?)?.toDouble() ?? 0,
+        sowingDate: json['sowingDate'] as String? ?? '',
+        expenses: (json['expenses'] as List<dynamic>?)
+                ?.map((e) => FarmExpense.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [],
+        sellingValue: (json['sellingValue'] as num?)?.toDouble(),
+      );
+
+  final String id;
+  final String name;
+  final double area;
+  final String sowingDate;
+  final List<FarmExpense> expenses;
+  final double? sellingValue;
+
+  double get totalExpenses =>
+      expenses.fold(0, (sum, e) => sum + e.amount);
+
+  double? get profit =>
+      sellingValue != null ? sellingValue! - totalExpenses : null;
+
+  double? get margin =>
+      profit != null && totalExpenses > 0 ? (profit! / totalExpenses) * 100 : null;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'area': area,
+        'sowingDate': sowingDate,
+        'expenses': expenses.map((e) => e.toJson()).toList(),
+        'sellingValue': sellingValue,
+      };
+
+  FarmCrop copyWith({
+    String? id,
+    String? name,
+    double? area,
+    String? sowingDate,
+    List<FarmExpense>? expenses,
+    double? sellingValue,
+    bool clearSellingValue = false,
+  }) =>
+      FarmCrop(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        area: area ?? this.area,
+        sowingDate: sowingDate ?? this.sowingDate,
+        expenses: expenses ?? this.expenses,
+        sellingValue: clearSellingValue ? null : (sellingValue ?? this.sellingValue),
+      );
+}
+
+/// History entry for scans and recommendations.
+class HistoryEntry {
+  HistoryEntry({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.summary,
+    required this.createdAt,
+  });
+
+  factory HistoryEntry.fromJson(Map<String, dynamic> json) => HistoryEntry(
+        id: json['id'] as String? ?? '',
+        type: json['type'] as String? ?? '',
+        title: json['title'] as String? ?? '',
+        summary: json['summary'] as String? ?? '',
+        createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+            DateTime.now(),
+      );
+
+  final String id;
+  final String type;
+  final String title;
+  final String summary;
+  final DateTime createdAt;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'type': type,
+        'title': title,
+        'summary': summary,
+        'createdAt': createdAt.toIso8601String(),
+      };
+}
+
+/// Local persistence for farm analytics and history.
+class LocalFarmStorage {
+  LocalFarmStorage(this._prefs);
+
+  final PreferencesService _prefs;
+
+  static const _cropsKey = 'farm_crops';
+  static const _historyKey = 'farm_history';
+
+  List<FarmCrop> getCrops() {
+    final raw = _prefs.getString(_cropsKey);
+    if (raw == null) return [];
+    final list = jsonDecode(raw) as List<dynamic>;
+    return list
+        .map((e) => FarmCrop.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> saveCrops(List<FarmCrop> crops) async {
+    await _prefs.setString(
+      _cropsKey,
+      jsonEncode(crops.map((c) => c.toJson()).toList()),
+    );
+  }
+
+  Future<void> addCrop(FarmCrop crop) async {
+    final crops = getCrops()..add(crop);
+    await saveCrops(crops);
+  }
+
+  Future<void> updateCrop(FarmCrop crop) async {
+    final crops = getCrops();
+    final index = crops.indexWhere((c) => c.id == crop.id);
+    if (index >= 0) {
+      crops[index] = crop;
+      await saveCrops(crops);
+    }
+  }
+
+  Future<void> deleteCrop(String id) async {
+    final crops = getCrops()..removeWhere((c) => c.id == id);
+    await saveCrops(crops);
+  }
+
+  List<HistoryEntry> getHistory() {
+    final raw = _prefs.getString(_historyKey);
+    if (raw == null) return [];
+    final list = jsonDecode(raw) as List<dynamic>;
+    return list
+        .map((e) => HistoryEntry.fromJson(e as Map<String, dynamic>))
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  Future<void> addHistory(HistoryEntry entry) async {
+    final history = getHistory()..insert(0, entry);
+    await _prefs.setString(
+      _historyKey,
+      jsonEncode(history.map((e) => e.toJson()).toList()),
+    );
+  }
+}

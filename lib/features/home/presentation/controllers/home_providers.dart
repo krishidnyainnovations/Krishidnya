@@ -5,6 +5,7 @@ import 'package:krishidnya/core/network/api_client.dart';
 import 'package:krishidnya/core/services/app_logger.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:krishidnya/features/home/data/home_repository.dart';
+import 'package:krishidnya/features/home/data/local_farm_storage.dart';
 import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 
 final homeRemoteDataSourceProvider = Provider<HomeRemoteDataSource>((ref) {
@@ -16,6 +17,23 @@ final homeRemoteDataSourceProvider = Provider<HomeRemoteDataSource>((ref) {
 
 final homeRepositoryProvider = Provider<HomeRepository>((ref) {
   return HomeRepository(remote: ref.watch(homeRemoteDataSourceProvider));
+});
+
+final localFarmStorageProvider = FutureProvider<LocalFarmStorage>((ref) async {
+  final prefs = await ref.watch(preferencesProvider.future);
+  return LocalFarmStorage(prefs);
+});
+
+final farmCropsProvider =
+    FutureProvider<List<FarmCrop>>((ref) async {
+  final storage = await ref.watch(localFarmStorageProvider.future);
+  return storage.getCrops();
+});
+
+final farmHistoryProvider =
+    FutureProvider<List<HistoryEntry>>((ref) async {
+  final storage = await ref.watch(localFarmStorageProvider.future);
+  return storage.getHistory();
 });
 
 final schemesProvider = FutureProvider<List<Scheme>>((ref) async {

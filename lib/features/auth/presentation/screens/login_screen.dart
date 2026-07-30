@@ -44,7 +44,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
     final state = ref.read(loginControllerProvider);
     if (state.isSuccess) {
-      ref.invalidate(currentUserProvider);
+      await refreshAuthSession(ref);
+      if (!mounted) return;
       context.go(AppRoutes.dashboard);
     } else if (state.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
