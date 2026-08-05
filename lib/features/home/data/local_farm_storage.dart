@@ -40,6 +40,7 @@ class FarmCrop {
     required this.sowingDate,
     this.expenses = const [],
     this.sellingValue,
+    this.harvestDate,
   });
 
   factory FarmCrop.fromJson(Map<String, dynamic> json) => FarmCrop(
@@ -52,6 +53,7 @@ class FarmCrop {
                 .toList() ??
             [],
         sellingValue: (json['sellingValue'] as num?)?.toDouble(),
+        harvestDate: json['harvestDate'] as String?,
       );
 
   final String id;
@@ -60,6 +62,7 @@ class FarmCrop {
   final String sowingDate;
   final List<FarmExpense> expenses;
   final double? sellingValue;
+  final String? harvestDate;
 
   double get totalExpenses =>
       expenses.fold(0, (sum, e) => sum + e.amount);
@@ -73,10 +76,10 @@ class FarmCrop {
   /// Monthly income based on harvest date and selling value.
   double? monthlyIncome(DateTime referenceMonth) {
     if (sellingValue == null) return null;
-    final sowDate = DateTime.tryParse(sowingDate);
-    if (sowDate == null) return null;
-    if (sowDate.year == referenceMonth.year &&
-        sowDate.month == referenceMonth.month) {
+    final saleDate = DateTime.tryParse(harvestDate ?? '');
+    if (saleDate == null) return null;
+    if (saleDate.year == referenceMonth.year &&
+        saleDate.month == referenceMonth.month) {
       return sellingValue;
     }
     return null;
@@ -97,6 +100,7 @@ class FarmCrop {
         'sowingDate': sowingDate,
         'expenses': expenses.map((e) => e.toJson()).toList(),
         'sellingValue': sellingValue,
+        'harvestDate': harvestDate,
       };
 
   FarmCrop copyWith({
@@ -106,7 +110,9 @@ class FarmCrop {
     String? sowingDate,
     List<FarmExpense>? expenses,
     double? sellingValue,
+    String? harvestDate,
     bool clearSellingValue = false,
+    bool clearHarvestDate = false,
   }) =>
       FarmCrop(
         id: id ?? this.id,
@@ -115,6 +121,7 @@ class FarmCrop {
         sowingDate: sowingDate ?? this.sowingDate,
         expenses: expenses ?? this.expenses,
         sellingValue: clearSellingValue ? null : (sellingValue ?? this.sellingValue),
+        harvestDate: clearHarvestDate ? null : (harvestDate ?? this.harvestDate),
       );
 }
 
@@ -285,7 +292,7 @@ class LocalFarmStorage {
 
   /// Total monthly income from harvested crops in given month.
   double monthlyIncome(DateTime month) {
-    return getCrops().fold(0.0, (sum, crop) {
+    return getCrops().fold(0, (sum, crop) {
       return sum + (crop.monthlyIncome(month) ?? 0);
     });
   }

@@ -1,6 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,10 +10,10 @@ import 'package:krishidnya/core/errors/exception_mapper.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
-import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 import 'package:krishidnya/features/home/data/home_repository.dart';
 import 'package:krishidnya/features/home/data/local_farm_storage.dart';
+import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
+import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
@@ -20,7 +21,6 @@ import 'package:krishidnya/widgets/feedback/empty_state_widget.dart';
 import 'package:krishidnya/widgets/inputs/app_text_field.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 /// AI crop recommendation with Gemini-powered results.
 class CropRecommendationScreen extends ConsumerStatefulWidget {
@@ -68,6 +68,16 @@ class _CropRecommendationScreenState
           );
       if (soilResult case Success(:final data)) {
         _soilApiSummary = data.toString();
+        final apiSoil = data['soil_type'] as String?;
+        if (apiSoil != null) {
+          final match = _soils.firstWhere(
+            (s) =>
+                s.toLowerCase().contains(apiSoil.toLowerCase()) ||
+                apiSoil.toLowerCase().contains(s.toLowerCase()),
+            orElse: () => _soilType,
+          );
+          if (mounted) setState(() => _soilType = match);
+        }
         final storage = await ref.read(localFarmStorageProvider.future);
         await storage.addSoilHistory(SoilHistoryEntry(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -300,7 +310,7 @@ class _DropdownField extends StatelessWidget {
         Text(label, style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: AppSpacing.xs),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
           onChanged: onChanged,
           decoration: const InputDecoration(
@@ -556,6 +566,7 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
   Map<String, dynamic>? _prices;
   bool _loading = false;
   List<String> _favorites = [];
+  List<String> _recent = [];
 
   @override
   void initState() {
@@ -566,7 +577,10 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
         _stateController.text = user!.state!;
       }
       final mandiPrefs = await ref.read(mandiPreferencesProvider.future);
-      setState(() => _favorites = mandiPrefs.getFavorites());
+      setState(() {
+        _favorites = mandiPrefs.getFavorites();
+        _recent = mandiPrefs.getRecent();
+      });
       await _fetch();
     });
   }
@@ -609,6 +623,8 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
           AppTextField(label: 'State', controller: _stateController),
           if (_favorites.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
+            Text('Favorites', style: Theme.of(context).textTheme.labelMedium),
+            const SizedBox(height: AppSpacing.xs),
             Wrap(
               spacing: AppSpacing.xs,
               children: _favorites.map((f) {
@@ -622,9 +638,27 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
               }).toList(),
             ),
           ],
+          if (_recent.where((r) => !_favorites.contains(r)).isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text('Recent', style: Theme.of(context).textTheme.labelMedium),
+            const SizedBox(height: AppSpacing.xs),
+            Wrap(
+              spacing: AppSpacing.xs,
+              children: _recent.where((r) => !_favorites.contains(r)).map((r) {
+                return ActionChip(
+                  label: Text(r),
+                  avatar: const Icon(Icons.history, size: 16),
+                  onPressed: () {
+                    _commodityController.text = r;
+                    _fetch();
+                  },
+                );
+              }).toList(),
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           PrimaryButton(
-            label: 'Fetch Today\'s Prices',
+            label: "Fetch Today's Prices",
             isLoading: _loading,
             onPressed: _fetch,
           ),
@@ -674,13 +708,15 @@ class _MandiPricesList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Today\'s Market Rates', style: Theme.of(context).textTheme.titleMedium),
+        Text("Today's Market Rates", style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: AppSpacing.sm),
         ...records.take(20).map((r) => Card(
               margin: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: ListTile(
-                title: Text(r['market'] ?? r['district'] ?? 'Market'),
-                subtitle: Text('${r['commodity'] ?? ''} · ${r['variety'] ?? ''}'),
+                title: Text('${r['market'] ?? r['district'] ?? 'Market'}'),
+                subtitle: Text(
+                  '${r['commodity'] ?? ''} · ${r['variety'] ?? ''}',
+                ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -754,10 +790,28 @@ class MarketplaceScreen extends ConsumerWidget {
                     return Card(
                       child: ListTile(
                         onTap: () => _showProductDetail(context, ref, p),
-                        leading: CircleAvatar(
-                          backgroundColor: AppColors.primaryContainer,
-                          child: Text(p.category[0].toUpperCase()),
-                        ),
+                        leading: p.imageUrl != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: CachedNetworkImage(
+                                  imageUrl: p.imageUrl!,
+                                  width: 48,
+                                  height: 48,
+                                  fit: BoxFit.cover,
+                                  placeholder: (_, __) => CircleAvatar(
+                                    backgroundColor: AppColors.primaryContainer,
+                                    child: Text(p.category[0].toUpperCase()),
+                                  ),
+                                  errorWidget: (_, __, ___) => CircleAvatar(
+                                    backgroundColor: AppColors.primaryContainer,
+                                    child: Text(p.category[0].toUpperCase()),
+                                  ),
+                                ),
+                              )
+                            : CircleAvatar(
+                                backgroundColor: AppColors.primaryContainer,
+                                child: Text(p.category[0].toUpperCase()),
+                              ),
                         title: Text(p.name),
                         subtitle: Text('${p.category}${p.description != null ? ' · ${p.description}' : ''}'),
                         trailing: Text('₹${p.price.toStringAsFixed(0)}/${p.unit}',
@@ -772,6 +826,9 @@ class MarketplaceScreen extends ConsumerWidget {
   }
 
   void _showProductDetail(BuildContext context, WidgetRef ref, Product p) {
+    final user = ref.read(currentUserProvider).valueOrNull;
+    final phone = p.contactPhone ?? user?.mobile;
+
     showModalBottomSheet<void>(
       context: context,
       builder: (ctx) => Padding(
@@ -780,6 +837,17 @@ class MarketplaceScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (p.imageUrl != null)
+              ClipRRect(
+                borderRadius: AppSpacing.cardRadius,
+                child: CachedNetworkImage(
+                  imageUrl: p.imageUrl!,
+                  height: 160,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            if (p.imageUrl != null) const SizedBox(height: AppSpacing.md),
             Text(p.name, style: Theme.of(ctx).textTheme.titleLarge),
             Text('${p.category} · ₹${p.price.toStringAsFixed(0)}/${p.unit}'),
             if (p.description != null) ...[
@@ -788,15 +856,17 @@ class MarketplaceScreen extends ConsumerWidget {
             ],
             const SizedBox(height: AppSpacing.lg),
             PrimaryButton(
-              label: 'Contact Seller',
-              onPressed: () async {
-                final uri = Uri.parse('tel:+919999999999');
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri);
-                } else {
-                  AppSnackBar.error(context, 'Could not open phone dialer');
-                }
-              },
+              label: phone != null ? 'Contact Seller' : 'No contact available',
+              onPressed: phone == null
+                  ? null
+                  : () async {
+                      final uri = Uri.parse('tel:$phone');
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri);
+                      } else if (ctx.mounted) {
+                        AppSnackBar.error(ctx, 'Could not open phone dialer');
+                      }
+                    },
             ),
           ],
         ),
@@ -1017,7 +1087,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                       color: AppColors.primaryContainer.withValues(alpha: 0.3),
                       child: ListTile(
                         title: const Text('Monthly Income'),
-                        subtitle: Text('This month from harvested crops'),
+                        subtitle: const Text('This month from harvested crops'),
                         trailing: Text(
                           '₹${income.toStringAsFixed(0)}',
                           style: const TextStyle(
@@ -1262,7 +1332,10 @@ class _CropDetailScreenState extends ConsumerState<_CropDetailScreen> {
             onPressed: () async {
               final value = double.tryParse(sellCtrl.text.trim());
               if (value == null) return;
-              final updated = _crop.copyWith(sellingValue: value);
+              final updated = _crop.copyWith(
+                sellingValue: value,
+                harvestDate: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+              );
               final storage = await ref.read(localFarmStorageProvider.future);
               await storage.updateCrop(updated);
               setState(() => _crop = updated);
@@ -1335,13 +1408,30 @@ class _CropDetailScreenState extends ConsumerState<_CropDetailScreen> {
           if (_crop.expenses.isEmpty)
             const Text('No expenses recorded yet. Tap Add Expense to log costs.')
           else
-            ..._crop.expenses.map((e) => Card(
+            ..._crop.expenses.asMap().entries.map((entry) {
+              final index = entry.key;
+              final e = entry.value;
+              return Card(
                   margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: ListTile(
                     title: Text('${e.type} — ₹${e.amount.toStringAsFixed(0)}'),
                     subtitle: Text('${e.date} · ${e.description}'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                      onPressed: () async {
+                        final updatedExpenses = List<FarmExpense>.from(_crop.expenses)
+                          ..removeAt(index);
+                        final updated = _crop.copyWith(expenses: updatedExpenses);
+                        final storage = await ref.read(localFarmStorageProvider.future);
+                        await storage.updateCrop(updated);
+                        setState(() => _crop = updated);
+                        ref.invalidate(farmCropsProvider);
+                        ref.invalidate(monthlyIncomeProvider);
+                      },
+                    ),
                   ),
-                )),
+                );
+            }),
         ],
       ),
     );

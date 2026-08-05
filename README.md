@@ -13,8 +13,8 @@
 - ☁️ Weather Forecasts
 - 📍 GPS-based Location Detection
 - 🌱 Crop Growth Monitoring
-- 🦠 Disease Detection (Coming Soon)
-- 📊 Farm Analytics (Coming Soon)
+- 🦠 Disease Detection (AI-powered crop scanning)
+- 📊 Farm Analytics (Digital farm logbook with expense tracking)
 - 🔔 Smart Notifications
 - 🌐 Localization Support
 - 🎨 Modern Material 3 UI
@@ -317,12 +317,17 @@ Recommendations
 | Onboarding | ✅ Complete |
 | Registration Flow | ✅ Complete |
 | Dashboard | ✅ Complete |
-| Weather | 🚧 In Progress |
-| Farm Management | 🚧 In Progress |
-| Disease Detection | 🚧 Planned |
-| Analytics | 🚧 Planned |
-| Notifications | 🚧 Planned |
-| Profile & Settings | 🚧 Planned |
+| Weather | ✅ Complete |
+| Farm Management | ✅ Complete |
+| Disease Detection | ✅ Complete |
+| Analytics | ✅ Complete |
+| Notifications | ✅ Complete |
+| Profile & Settings | ✅ Complete |
+| Marketplace | ✅ Complete |
+| Mandi Prices | ✅ Complete |
+| Government Schemes | ✅ Complete |
+| AI Chat | ✅ Complete |
+| Community | ✅ Complete |
 
 ---
 

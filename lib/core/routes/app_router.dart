@@ -8,11 +8,10 @@ import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:krishidnya/features/auth/presentation/screens/login_screen.dart';
 import 'package:krishidnya/features/auth/presentation/screens/onboarding_screen.dart';
-import 'package:krishidnya/features/auth/presentation/screens/register_screen.dart';
-import 'package:krishidnya/features/auth/presentation/screens/registration_journey_screens.dart';
-import 'package:krishidnya/widgets/common/app_logo.dart';
 import 'package:krishidnya/features/auth/presentation/screens/otp_login_screen.dart';
 import 'package:krishidnya/features/auth/presentation/screens/profile_edit_screen.dart';
+import 'package:krishidnya/features/auth/presentation/screens/register_screen.dart';
+import 'package:krishidnya/features/auth/presentation/screens/registration_journey_screens.dart';
 import 'package:krishidnya/features/home/presentation/screens/feature_screens.dart';
 import 'package:krishidnya/features/home/presentation/screens/nearby_farmers_screen.dart';
 import 'package:krishidnya/features/home/presentation/screens/notifications_screen.dart';
@@ -21,6 +20,7 @@ import 'package:krishidnya/features/home/presentation/screens/schemes_screen.dar
 import 'package:krishidnya/features/home/presentation/screens/settings_screen.dart';
 import 'package:krishidnya/features/home/presentation/screens/social_screens.dart';
 import 'package:krishidnya/features/home/presentation/screens/weather_forecast_screen.dart';
+import 'package:krishidnya/widgets/common/app_logo.dart';
 import 'package:krishidnya/widgets/navigation/main_shell.dart';
 
 /// Keeps GoRouter alive while re-running redirects on auth changes.
@@ -68,7 +68,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.onboarding;
       }
 
-      if (isAuthenticated && isAuthRoute && location != AppRoutes.splash) {
+      if (isAuthenticated &&
+          isAuthRoute &&
+          location != AppRoutes.splash &&
+          location != AppRoutes.registerSuccess) {
         return AppRoutes.dashboard;
       }
 
@@ -249,6 +252,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _sharedAxisPage(
           state,
           const MarketplaceScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/marketplace/:id',
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          ProductDetailScreen(
+            productId: int.parse(state.pathParameters['id']!),
+          ),
         ),
       ),
       GoRoute(

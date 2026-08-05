@@ -302,9 +302,9 @@ class HomeRepository {
 
   final HomeRemoteDataSource _remote;
 
-  Future<Result<List<Scheme>>> getSchemes() async {
+  Future<Result<List<Scheme>>> getSchemes({String? search, String? type}) async {
     try {
-      return Success(await _remote.fetchSchemes());
+      return Success(await _remote.fetchSchemes(search: search, type: type));
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }

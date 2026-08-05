@@ -179,14 +179,14 @@ class _WeatherBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return weatherAsync.when(
       loading: () => PromoBanner(
-        title: 'Today\'s Weather',
-        subtitle: 'Looking at today\'s sky...',
+        title: "Today's Weather",
+        subtitle: "Looking at today's sky...",
         icon: Icons.wb_cloudy_outlined,
         gradient: AppColors.skyGradient,
         onTap: onTap,
       ),
       error: (_, __) => PromoBanner(
-        title: 'Today\'s Weather',
+        title: "Today's Weather",
         subtitle: 'Tap to view forecast',
         icon: Icons.wb_sunny_rounded,
         gradient: AppColors.skyGradient,

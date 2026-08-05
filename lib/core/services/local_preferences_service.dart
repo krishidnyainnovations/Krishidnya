@@ -75,3 +75,27 @@ class MandiPreferences {
     await _prefs.setString(_recentKey, jsonEncode(recent.take(8).toList()));
   }
 }
+
+/// Tracks locally read notification IDs.
+class NotificationPreferences {
+  NotificationPreferences(this._prefs);
+
+  final PreferencesService _prefs;
+  static const _readKey = 'notification_read_ids';
+
+  Set<String> getReadIds() {
+    final raw = _prefs.getString(_readKey);
+    if (raw == null) return {};
+    return (jsonDecode(raw) as List<dynamic>).cast<String>().toSet();
+  }
+
+  Future<void> markAsRead(String id) async {
+    final ids = getReadIds()..add(id);
+    await _prefs.setString(_readKey, jsonEncode(ids.toList()));
+  }
+
+  Future<void> markAllAsRead(List<String> ids) async {
+    final read = getReadIds()..addAll(ids);
+    await _prefs.setString(_readKey, jsonEncode(read.toList()));
+  }
+}

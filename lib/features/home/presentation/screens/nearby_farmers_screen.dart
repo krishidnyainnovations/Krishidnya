@@ -1,13 +1,27 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
+import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
+import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 import 'package:krishidnya/widgets/feedback/empty_state_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Nearby farmers from backend geo query.
 class NearbyFarmersScreen extends ConsumerWidget {
   const NearbyFarmersScreen({super.key});
+
+  Future<void> _callFarmer(BuildContext context, String phone) async {
+    final uri = Uri.parse('tel:$phone');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else if (context.mounted) {
+      AppSnackBar.error(context, 'Could not open phone dialer');
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,7 +66,14 @@ class NearbyFarmersScreen extends ConsumerWidget {
                         ].join(' · '),
                       ),
                       trailing: f.mobile != null
-                          ? const Icon(Icons.phone_outlined)
+                          ? IconButton(
+                              icon: const Icon(Icons.phone_outlined),
+                              tooltip: 'Call ${f.mobile}',
+                              onPressed: () => _callFarmer(context, f.mobile!),
+                            )
+                          : null,
+                      onTap: f.mobile != null
+                          ? () => _callFarmer(context, f.mobile!)
                           : null,
                     ),
                   );

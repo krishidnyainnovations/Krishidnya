@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:krishidnya/core/errors/exception_mapper.dart';
 import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
+import 'package:krishidnya/core/utils/account_dialogs.dart';
+import 'package:krishidnya/features/auth/domain/entities/user.dart';
+import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
 import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
 import 'package:krishidnya/features/home/presentation/screens/feature_screens.dart';
@@ -13,7 +18,6 @@ import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 import 'package:krishidnya/widgets/feedback/empty_state_widget.dart';
 import 'package:krishidnya/widgets/inputs/app_text_field.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 /// AI farming assistant chat with voice input and history persistence.
@@ -58,7 +62,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final service = await ref.read(chatHistoryServiceProvider.future);
     final history = service.load();
     if (history.isNotEmpty) {
-      setState(() => _conversationHistory.addAll(history));
+      final restored = <_ChatMessage>[];
+      for (final entry in history) {
+        final role = entry['role'];
+        final content = entry['content'];
+        if (role == null || content == null) continue;
+        restored.add(_ChatMessage(
+          text: content,
+          isUser: role == 'user',
+        ));
+      }
+      setState(() {
+        _conversationHistory.addAll(history);
+        _messages.addAll(restored);
+      });
     }
   }
 
@@ -243,7 +260,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 IconButton.filled(
-                  onPressed: () => _send(),
+                  onPressed: _send,
                   icon: const Icon(Icons.send_rounded),
                 ),
               ],
@@ -389,7 +406,7 @@ class CommunityScreen extends ConsumerWidget {
               AppTextField(label: 'Category', controller: categoryCtrl),
               const SizedBox(height: AppSpacing.sm),
               AppTextField(
-                label: 'What\'s happening on your farm?',
+                label: "What's happening on your farm?",
                 controller: contentCtrl,
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -455,7 +472,7 @@ class _PostCard extends ConsumerWidget {
         await ref.read(homeRepositoryProvider).getComments(post.id);
     final comments = switch (commentsResult) {
       Success(:final data) => data,
-      ErrorResult() => <dynamic>[],
+      ErrorResult() => <PostComment>[],
     };
 
     if (!context.mounted) return;
@@ -623,7 +640,7 @@ class ProfileScreen extends ConsumerWidget {
           subtitle: 'Manage your account and farm details.',
           icon: Icons.person_outline_rounded,
         ),
-        data: (user) => ListView(
+        data: (User? user) => ListView(
           padding: AppSpacing.screenPadding,
           children: [
             CircleAvatar(
@@ -666,18 +683,18 @@ class ProfileScreen extends ConsumerWidget {
             _ProfileTile(
               icon: Icons.description_outlined,
               title: 'Terms & Conditions',
-              onTap: () => context.push(AppRoutes.settings),
+              onTap: () => showLegalSheet(context, 'Terms & Conditions', kTermsText),
             ),
             _ProfileTile(
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy Policy',
-              onTap: () => context.push(AppRoutes.settings),
+              onTap: () => showLegalSheet(context, 'Privacy Policy', kPrivacyText),
             ),
             _ProfileTile(
               icon: Icons.delete_outline,
               title: 'Delete Account',
               color: AppColors.error,
-              onTap: () => context.push(AppRoutes.settings),
+              onTap: () => confirmDeleteAccount(context, ref),
             ),
           ],
         ),

@@ -179,6 +179,15 @@ class AppNotification {
   final String createdAt;
   final bool isRead;
   final String? type;
+
+  AppNotification copyWith({bool? isRead}) => AppNotification(
+        id: id,
+        title: title,
+        body: body,
+        createdAt: createdAt,
+        isRead: isRead ?? this.isRead,
+        type: type,
+      );
 }
 
 /// Nearby farmer profile.

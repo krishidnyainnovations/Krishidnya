@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishidnya/core/errors/exception_mapper.dart';
@@ -131,6 +132,18 @@ class _SchemeDetailBody extends ConsumerWidget {
     return ListView(
       padding: AppSpacing.screenPadding,
       children: [
+        if (scheme.imageUrl != null) ...[
+          ClipRRect(
+            borderRadius: AppSpacing.cardRadius,
+            child: CachedNetworkImage(
+              imageUrl: scheme.imageUrl!,
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+        ],
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.sm,

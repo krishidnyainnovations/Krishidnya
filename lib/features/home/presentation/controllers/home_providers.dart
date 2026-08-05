@@ -35,6 +35,12 @@ final mandiPreferencesProvider = FutureProvider<MandiPreferences>((ref) async {
   return MandiPreferences(prefs);
 });
 
+final notificationPreferencesProvider =
+    FutureProvider<NotificationPreferences>((ref) async {
+  final prefs = await ref.watch(preferencesProvider.future);
+  return NotificationPreferences(prefs);
+});
+
 final localePreferencesProvider = FutureProvider<LocalePreferences>((ref) async {
   final prefs = await ref.watch(preferencesProvider.future);
   return LocalePreferences(prefs);
@@ -79,8 +85,16 @@ final monthlyIncomeProvider = FutureProvider<double>((ref) async {
   return storage.monthlyIncome(DateTime.now());
 });
 
+final schemesSearchProvider = StateProvider<String>((ref) => '');
+final schemesTypeFilterProvider = StateProvider<String?>((ref) => null);
+
 final schemesProvider = FutureProvider<List<Scheme>>((ref) async {
-  final result = await ref.watch(homeRepositoryProvider).getSchemes();
+  final search = ref.watch(schemesSearchProvider);
+  final type = ref.watch(schemesTypeFilterProvider);
+  final result = await ref.watch(homeRepositoryProvider).getSchemes(
+        search: search.isEmpty ? null : search,
+        type: type,
+      );
   return switch (result) {
     Success(:final data) => data,
     ErrorResult(:final failure) => throw failure,
@@ -108,7 +122,6 @@ final homeWeatherProvider = FutureProvider<WeatherSummary>((ref) async {
         latitude: user!.latitude!,
         longitude: user.longitude!,
         locationLabel: user.location ?? user.city ?? 'Your Farm',
-        includeForecast: true,
       );
 
   return switch (result) {
@@ -128,6 +141,14 @@ final productsProvider = FutureProvider<List<Product>>((ref) async {
   };
 });
 
+final productDetailProvider = FutureProvider.family<Product, int>((ref, id) async {
+  final products = await ref.watch(productsProvider.future);
+  return products.firstWhere(
+    (p) => p.id == id,
+    orElse: () => throw StateError('Product #$id not found'),
+  );
+});
+
 final communityPostsProvider = FutureProvider<List<CommunityPost>>((ref) async {
   final result = await ref.watch(homeRepositoryProvider).getPosts();
   return switch (result) {
@@ -139,8 +160,12 @@ final communityPostsProvider = FutureProvider<List<CommunityPost>>((ref) async {
 final notificationsProvider =
     FutureProvider<List<AppNotification>>((ref) async {
   final result = await ref.watch(homeRepositoryProvider).getNotifications();
+  final readPrefs = await ref.watch(notificationPreferencesProvider.future);
+  final readIds = readPrefs.getReadIds();
   return switch (result) {
-    Success(:final data) => data,
+    Success(:final data) => data
+        .map((n) => n.copyWith(isRead: n.isRead || readIds.contains(n.id)))
+        .toList(),
     ErrorResult(:final failure) => throw failure,
   };
 });

@@ -24,7 +24,7 @@ class WeatherForecastScreen extends ConsumerWidget {
             children: [
               CircularProgressIndicator(color: AppColors.primary),
               SizedBox(height: AppSpacing.md),
-              Text('Looking at today\'s sky...'),
+              Text("Looking at today's sky..."),
             ],
           ),
         ),

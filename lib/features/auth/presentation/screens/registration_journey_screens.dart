@@ -222,7 +222,7 @@ class AlmostReadyScreen extends ConsumerWidget {
     ref.listen(registrationControllerProvider, (prev, next) {
       if (next.step == RegistrationStep.success) {
         refreshAuthSession(ref).then((_) {
-          if (context.mounted) context.go(AppRoutes.dashboard);
+          if (context.mounted) context.go(AppRoutes.registerSuccess);
         });
       } else if (next.error != null && prev?.step != RegistrationStep.createAccount) {
         ScaffoldMessenger.of(context).showSnackBar(

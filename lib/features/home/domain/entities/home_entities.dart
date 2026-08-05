@@ -58,7 +58,7 @@ class WeatherSummary extends Equatable {
     final current = json['current'] as Map<String, dynamic>? ?? json;
     final main = current['main'] as Map<String, dynamic>? ?? current;
     final weatherList = current['weather'] as List<dynamic>?;
-    final condition = weatherList?.isNotEmpty == true
+    final condition = weatherList?.isNotEmpty ?? false
         ? (weatherList!.first as Map)['description'] as String? ?? 'Clear'
         : json['condition'] as String? ?? 'Clear';
 
@@ -132,6 +132,7 @@ class Product extends Equatable {
     this.inStock = true,
     this.rating = 0,
     this.imageUrl,
+    this.contactPhone,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -144,6 +145,8 @@ class Product extends Equatable {
         inStock: json['inStock'] as bool? ?? json['in_stock'] as bool? ?? true,
         rating: (json['rating'] as num?)?.toDouble() ?? 0,
         imageUrl: json['image_url'] as String?,
+        contactPhone: json['contact_phone'] as String? ??
+            json['contactPhone'] as String?,
       );
 
   final int id;
@@ -155,6 +158,7 @@ class Product extends Equatable {
   final bool inStock;
   final double rating;
   final String? imageUrl;
+  final String? contactPhone;
 
   @override
   List<Object?> get props => [id, name, category, price];
