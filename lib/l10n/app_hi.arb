@@ -1,0 +1,16 @@
+{
+  "@@locale": "hi",
+  "appName": "कृषिदnya",
+  "appTagline": "आपका विश्वसनीय कृषि साथी",
+  "login": "लॉगिन",
+  "register": "खाता बनाएं",
+  "welcomeBack": "वापसी पर स्वागत है",
+  "loginSubtitle": "अपनी कृषि यात्रा जारी रखने के लिए साइन इन करें",
+  "mobileNumber": "मोबाइल नंबर",
+  "password": "पासवर्ड",
+  "fullName": "पूरा नाम",
+  "email": "ईमेल",
+  "getStarted": "शुरू करें",
+  "next": "आगे",
+  "skip": "छोड़ें"
+}

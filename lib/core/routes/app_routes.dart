@@ -26,4 +26,9 @@ abstract final class AppRoutes {
   static const String community = '/community';
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String profileEdit = '/profile/edit';
+  static const String otpLogin = '/login/otp';
+  static const String notifications = '/notifications';
+  static const String nearbyFarmers = '/community/nearby';
+  static const String productDetail = '/marketplace/:id';
 }

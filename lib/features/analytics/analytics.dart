@@ -1,4 +1,3 @@
-/// Feature module placeholder — Farm analytics and insights.
-library;
-
-// TODO: Implement analytics feature
+/// Analytics feature exports.
+export 'package:krishidnya/features/home/presentation/screens/feature_screens.dart'
+    show AnalyticsScreen;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
@@ -26,7 +28,27 @@ class WeatherForecastScreen extends ConsumerWidget {
             ],
           ),
         ),
-        error: (e, _) => Center(child: Text('Weather unavailable: $e')),
+        error: (e, _) => Center(
+          child: Padding(
+            padding: AppSpacing.screenPadding,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.location_off_outlined, size: 48),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  e.toString(),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                FilledButton(
+                  onPressed: () => context.push(AppRoutes.profileEdit),
+                  child: const Text('Update Location in Profile'),
+                ),
+              ],
+            ),
+          ),
+        ),
         data: (weather) => ListView(
           padding: AppSpacing.screenPadding,
           children: [
@@ -39,17 +61,27 @@ class WeatherForecastScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Extended Forecast',
+              '15-Day Extended Forecast',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSpacing.sm),
             if (weather.forecast.isEmpty)
-              const Card(
+              Card(
                 child: Padding(
                   padding: AppSpacing.cardPadding,
-                  child: Text(
-                    'Detailed 15-day forecast will appear here once '
-                    'connected to your location data.',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Forecast data is loading from your location. '
+                        'If this persists, ensure your profile has GPS coordinates set.',
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      OutlinedButton(
+                        onPressed: () => ref.invalidate(homeWeatherProvider),
+                        child: const Text('Retry'),
+                      ),
+                    ],
                   ),
                 ),
               )

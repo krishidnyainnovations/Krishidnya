@@ -178,6 +178,15 @@ class RegistrationController extends StateNotifier<RegistrationState> {
 
     switch (result) {
       case Success():
+        if (state.location != null) {
+          await _repository.updateLocation(
+            latitude: state.location!.latitude,
+            longitude: state.location!.longitude,
+            location: state.location!.displayLocation,
+            city: state.location!.city,
+            state: state.location!.state,
+          );
+        }
         state = state.copyWith(
           step: RegistrationStep.success,
           isLoading: false,

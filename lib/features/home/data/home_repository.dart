@@ -3,6 +3,8 @@ import 'package:krishidnya/core/api/api_config.dart';
 import 'package:krishidnya/core/errors/exception_mapper.dart';
 import 'package:krishidnya/core/network/api_client.dart';
 import 'package:krishidnya/core/services/app_logger.dart';
+import 'package:krishidnya/features/home/data/local_farm_storage.dart';
+import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
 import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 
 /// Remote API calls for home screen features.
@@ -29,6 +31,13 @@ class HomeRemoteDataSource {
         .toList();
   }
 
+  Future<Scheme> fetchScheme(int id) async {
+    final response = await _client.get<Map<String, dynamic>>(
+      ApiConfig.schemeDetail(id),
+    );
+    return Scheme.fromJson(response.data ?? {});
+  }
+
   Future<void> applyForScheme({
     required int schemeId,
     required String name,
@@ -52,6 +61,7 @@ class HomeRemoteDataSource {
     required double latitude,
     required double longitude,
     String locationLabel = 'Your Farm',
+    bool includeForecast = true,
   }) async {
     final response = await _client.post<Map<String, dynamic>>(
       ApiConfig.weather,
@@ -59,6 +69,8 @@ class HomeRemoteDataSource {
         'latitude': latitude,
         'longitude': longitude,
         'units': 'metric',
+        'forecast_days': 15,
+        'include_forecast': includeForecast,
       },
     );
 
@@ -69,6 +81,18 @@ class HomeRemoteDataSource {
 
     _logger.info('Weather', 'Fetched weather for $locationLabel');
     return WeatherSummary.fromJson(data);
+  }
+
+  Future<List<WeatherSummary>> fetchWeatherBatch(
+    List<Map<String, dynamic>> locations,
+  ) async {
+    final response = await _client.post<List<dynamic>>(
+      ApiConfig.weatherBatch,
+      data: {'locations': locations},
+    );
+    return (response.data ?? [])
+        .map((e) => WeatherSummary.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Map<String, dynamic>> fetchMandiPrices({
@@ -87,12 +111,28 @@ class HomeRemoteDataSource {
     return response.data ?? {};
   }
 
-  Future<List<Product>> fetchProducts({String? category, String? search}) async {
+  Future<Map<String, dynamic>> fetchSoilData({
+    required double latitude,
+    required double longitude,
+  }) async {
+    final response = await _client.post<Map<String, dynamic>>(
+      ApiConfig.soil,
+      data: {'latitude': latitude, 'longitude': longitude},
+    );
+    return response.data ?? {};
+  }
+
+  Future<List<Product>> fetchProducts({
+    String? category,
+    String? search,
+    String? state,
+  }) async {
     final response = await _client.get<List<dynamic>>(
       ApiConfig.products,
       queryParameters: {
         if (category != null) 'category': category,
         if (search != null) 'search': search,
+        if (state != null) 'state': state,
       },
     );
     return (response.data ?? [])
@@ -110,6 +150,71 @@ class HomeRemoteDataSource {
         .toList();
   }
 
+  Future<Map<String, dynamic>> likePost(int postId) async {
+    final response = await _client.post<Map<String, dynamic>>(
+      ApiConfig.postLike(postId),
+    );
+    return response.data ?? {};
+  }
+
+  Future<List<PostComment>> fetchComments(int postId) async {
+    final response = await _client.get<List<dynamic>>(
+      ApiConfig.postComments(postId),
+    );
+    return (response.data ?? [])
+        .map((e) => PostComment.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<PostComment> addComment(int postId, String content) async {
+    final response = await _client.post<Map<String, dynamic>>(
+      ApiConfig.postComments(postId),
+      data: {'content': content},
+    );
+    return PostComment.fromJson(response.data ?? {});
+  }
+
+  Future<List<NearbyFarmer>> fetchNearbyUsers({
+    double? latitude,
+    double? longitude,
+    double radiusKm = 50,
+  }) async {
+    final response = await _client.get<List<dynamic>>(
+      ApiConfig.nearbyUsers,
+      queryParameters: {
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        'radius_km': radiusKm,
+      },
+    );
+    return (response.data ?? [])
+        .map((e) => NearbyFarmer.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<AppNotification>> fetchNotifications() async {
+    final response = await _client.get<List<dynamic>>(
+      ApiConfig.notifications,
+    );
+    return (response.data ?? [])
+        .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<FarmCrop>> fetchFarmCropsFromServer() async {
+    final response = await _client.get<List<dynamic>>(ApiConfig.farmCrops);
+    return (response.data ?? [])
+        .map((e) => FarmCrop.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> syncFarmCropsToServer(List<FarmCrop> crops) async {
+    await _client.post<Map<String, dynamic>>(
+      ApiConfig.farmCrops,
+      data: {'crops': crops.map((c) => c.toJson()).toList()},
+    );
+  }
+
   Future<Map<String, dynamic>> sendChatMessage({
     required String message,
     List<Map<String, String>>? history,
@@ -125,9 +230,7 @@ class HomeRemoteDataSource {
     return response.data ?? {};
   }
 
-  Future<Map<String, dynamic>> scanCrop({
-    required FormData formData,
-  }) async {
+  Future<Map<String, dynamic>> scanCrop({required FormData formData}) async {
     final response = await _client.multipart<Map<String, dynamic>>(
       ApiConfig.scanCrop,
       formData: formData,
@@ -139,7 +242,22 @@ class HomeRemoteDataSource {
     required String content,
     String? title,
     String category = 'Discussion',
+    String? imagePath,
   }) async {
+    if (imagePath != null) {
+      final formData = FormData.fromMap({
+        'content': content,
+        if (title != null) 'title': title,
+        'category': category,
+        'file': await MultipartFile.fromFile(imagePath),
+      });
+      final response = await _client.multipart<Map<String, dynamic>>(
+        ApiConfig.posts,
+        formData: formData,
+      );
+      return response.data ?? {};
+    }
+
     final response = await _client.post<Map<String, dynamic>>(
       ApiConfig.posts,
       data: {
@@ -157,6 +275,9 @@ class HomeRemoteDataSource {
     required double price,
     required String unit,
     String? description,
+    String listingType = 'sell',
+    String? state,
+    String? contactPhone,
   }) async {
     final response = await _client.post<Map<String, dynamic>>(
       ApiConfig.products,
@@ -165,7 +286,10 @@ class HomeRemoteDataSource {
         'category': category,
         'price': price,
         'unit': unit,
+        'listing_type': listingType,
         if (description != null) 'description': description,
+        if (state != null) 'state': state,
+        if (contactPhone != null) 'contact_phone': contactPhone,
       },
     );
     return response.data ?? {};
@@ -181,6 +305,14 @@ class HomeRepository {
   Future<Result<List<Scheme>>> getSchemes() async {
     try {
       return Success(await _remote.fetchSchemes());
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<Scheme>> getScheme(int id) async {
+    try {
+      return Success(await _remote.fetchScheme(id));
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
@@ -211,12 +343,14 @@ class HomeRepository {
     required double latitude,
     required double longitude,
     String locationLabel = 'Your Farm',
+    bool includeForecast = true,
   }) async {
     try {
       return Success(await _remote.fetchWeather(
         latitude: latitude,
         longitude: longitude,
         locationLabel: locationLabel,
+        includeForecast: includeForecast,
       ));
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
@@ -239,9 +373,23 @@ class HomeRepository {
     }
   }
 
-  Future<Result<List<Product>>> getProducts() async {
+  Future<Result<Map<String, dynamic>>> getSoilData({
+    required double latitude,
+    required double longitude,
+  }) async {
     try {
-      return Success(await _remote.fetchProducts());
+      return Success(await _remote.fetchSoilData(
+        latitude: latitude,
+        longitude: longitude,
+      ));
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<List<Product>>> getProducts({String? state}) async {
+    try {
+      return Success(await _remote.fetchProducts(state: state));
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
@@ -250,6 +398,69 @@ class HomeRepository {
   Future<Result<List<CommunityPost>>> getPosts() async {
     try {
       return Success(await _remote.fetchPosts());
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> likePost(int postId) async {
+    try {
+      return Success(await _remote.likePost(postId));
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<List<PostComment>>> getComments(int postId) async {
+    try {
+      return Success(await _remote.fetchComments(postId));
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<PostComment>> addComment(int postId, String content) async {
+    try {
+      return Success(await _remote.addComment(postId, content));
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<List<NearbyFarmer>>> getNearbyUsers({
+    double? latitude,
+    double? longitude,
+  }) async {
+    try {
+      return Success(await _remote.fetchNearbyUsers(
+        latitude: latitude,
+        longitude: longitude,
+      ));
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<List<AppNotification>>> getNotifications() async {
+    try {
+      return Success(await _remote.fetchNotifications());
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<bool>> syncFarmCrops(List<FarmCrop> crops) async {
+    try {
+      await _remote.syncFarmCropsToServer(crops);
+      return const Success(true);
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<List<FarmCrop>>> fetchRemoteFarmCrops() async {
+    try {
+      return Success(await _remote.fetchFarmCropsFromServer());
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
@@ -280,13 +491,14 @@ class HomeRepository {
     }
   }
 
-  Future<Result<Map<String, dynamic>>> getCropRecommendations({
+  Future<Result<CropRecommendationResult>> getCropRecommendations({
     required String soilType,
     required String season,
     required String watering,
     required double area,
     required String location,
     String? weatherSummary,
+    String? soilApiData,
   }) async {
     final prompt = '''
 You are an expert agricultural advisor for Indian farmers.
@@ -313,10 +525,12 @@ Farm data:
 - Farm area: $area acres
 - Location: $location
 ${weatherSummary != null ? '- Current weather: $weatherSummary' : ''}
+${soilApiData != null ? '- Soil API data: $soilApiData' : ''}
 ''';
 
     try {
-      return Success(await _remote.sendChatMessage(message: prompt));
+      final data = await _remote.sendChatMessage(message: prompt);
+      return Success(CropRecommendationResult.fromApiResponse(data));
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
@@ -326,12 +540,14 @@ ${weatherSummary != null ? '- Current weather: $weatherSummary' : ''}
     required String content,
     String? title,
     String category = 'Discussion',
+    String? imagePath,
   }) async {
     try {
       return Success(await _remote.createPost(
         content: content,
         title: title,
         category: category,
+        imagePath: imagePath,
       ));
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
@@ -344,6 +560,9 @@ ${weatherSummary != null ? '- Current weather: $weatherSummary' : ''}
     required double price,
     required String unit,
     String? description,
+    String listingType = 'sell',
+    String? state,
+    String? contactPhone,
   }) async {
     try {
       return Success(await _remote.createProduct(
@@ -352,9 +571,30 @@ ${weatherSummary != null ? '- Current weather: $weatherSummary' : ''}
         price: price,
         unit: unit,
         description: description,
+        listingType: listingType,
+        state: state,
+        contactPhone: contactPhone,
       ));
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
   }
+}
+
+/// Parses mandi price API responses with flexible backend shapes.
+List<Map<String, dynamic>> parseMandiRecords(Map<String, dynamic> data) {
+  if (data.containsKey('error')) return [];
+  if (data['records'] is List) {
+    return (data['records'] as List).cast<Map<String, dynamic>>();
+  }
+  if (data['data'] is List) {
+    return (data['data'] as List).map((e) {
+      if (e is Map<String, dynamic>) return e;
+      return <String, dynamic>{'price': e.toString()};
+    }).toList();
+  }
+  if (data['prices'] is List) {
+    return (data['prices'] as List).cast<Map<String, dynamic>>();
+  }
+  return [data];
 }

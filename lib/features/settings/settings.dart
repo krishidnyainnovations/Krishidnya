@@ -1,4 +1,2 @@
-/// Feature module placeholder — App settings and preferences.
-library;
-
-// TODO: Implement settings feature
+/// Settings feature exports.
+export 'package:krishidnya/features/home/presentation/screens/settings_screen.dart';

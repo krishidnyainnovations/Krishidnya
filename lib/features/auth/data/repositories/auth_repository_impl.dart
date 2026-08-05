@@ -26,6 +26,31 @@ abstract interface class AuthRepository {
   Future<Result<User?>> getCurrentUser();
 
   Future<bool> isAuthenticated();
+
+  Future<Result<User>> updateProfile({
+    String? fullName,
+    String? email,
+    String? location,
+    String? city,
+    String? state,
+  });
+
+  Future<Result<User>> updateLocation({
+    required double latitude,
+    required double longitude,
+    String? location,
+    String? city,
+    String? state,
+  });
+
+  Future<Result<bool>> sendOtp(String mobile);
+
+  Future<Result<AuthResponse>> verifyOtp({
+    required String mobile,
+    required String otp,
+  });
+
+  Future<Result<bool>> deleteAccount();
 }
 
 /// Implementation of [AuthRepository].
@@ -143,4 +168,91 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> isAuthenticated() => _remote.isAuthenticated();
+
+  @override
+  Future<Result<User>> updateProfile({
+    String? fullName,
+    String? email,
+    String? location,
+    String? city,
+    String? state,
+  }) async {
+    try {
+      final user = await _remote.updateUser(
+        fullName: fullName,
+        email: email,
+        location: location,
+        city: city,
+        state: state,
+      );
+      return Success(user);
+    } catch (e, st) {
+      final failure = ExceptionMapper.map(e);
+      _logger.error('AuthRepo', 'Update profile failed', error: e, stackTrace: st);
+      return ErrorResult(failure);
+    }
+  }
+
+  @override
+  Future<Result<User>> updateLocation({
+    required double latitude,
+    required double longitude,
+    String? location,
+    String? city,
+    String? state,
+  }) async {
+    try {
+      final user = await _remote.updateLocation(
+        latitude: latitude,
+        longitude: longitude,
+        location: location,
+        city: city,
+        state: state,
+      );
+      return Success(user);
+    } catch (e, st) {
+      final failure = ExceptionMapper.map(e);
+      _logger.error('AuthRepo', 'Update location failed', error: e, stackTrace: st);
+      return ErrorResult(failure);
+    }
+  }
+
+  @override
+  Future<Result<bool>> sendOtp(String mobile) async {
+    try {
+      await _remote.sendOtp(mobile);
+      return const Success(true);
+    } catch (e, st) {
+      final failure = ExceptionMapper.map(e);
+      _logger.error('AuthRepo', 'Send OTP failed', error: e, stackTrace: st);
+      return ErrorResult(failure);
+    }
+  }
+
+  @override
+  Future<Result<AuthResponse>> verifyOtp({
+    required String mobile,
+    required String otp,
+  }) async {
+    try {
+      final response = await _remote.verifyOtp(mobile: mobile, otp: otp);
+      return Success(response);
+    } catch (e, st) {
+      final failure = ExceptionMapper.map(e);
+      _logger.error('AuthRepo', 'Verify OTP failed', error: e, stackTrace: st);
+      return ErrorResult(failure);
+    }
+  }
+
+  @override
+  Future<Result<bool>> deleteAccount() async {
+    try {
+      await _remote.deleteAccount();
+      return const Success(true);
+    } catch (e, st) {
+      final failure = ExceptionMapper.map(e);
+      _logger.error('AuthRepo', 'Delete account failed', error: e, stackTrace: st);
+      return ErrorResult(failure);
+    }
+  }
 }

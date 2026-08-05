@@ -56,6 +56,33 @@ class User extends Equatable {
         if (country != null) 'country': country,
       };
 
+  User copyWith({
+    String? id,
+    String? username,
+    String? mobile,
+    String? email,
+    String? fullName,
+    String? location,
+    double? latitude,
+    double? longitude,
+    String? city,
+    String? state,
+    String? country,
+  }) =>
+      User(
+        id: id ?? this.id,
+        username: username ?? this.username,
+        mobile: mobile ?? this.mobile,
+        email: email ?? this.email,
+        fullName: fullName ?? this.fullName,
+        location: location ?? this.location,
+        latitude: latitude ?? this.latitude,
+        longitude: longitude ?? this.longitude,
+        city: city ?? this.city,
+        state: state ?? this.state,
+        country: country ?? this.country,
+      );
+
   @override
   List<Object?> get props => [
         id,

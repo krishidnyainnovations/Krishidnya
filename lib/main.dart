@@ -5,14 +5,23 @@ import 'package:krishidnya/core/config/providers.dart';
 import 'package:krishidnya/core/routes/app_router.dart';
 import 'package:krishidnya/core/services/app_logger.dart';
 import 'package:krishidnya/core/theme/app_theme.dart';
+import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
 import 'package:krishidnya/l10n/app_localizations.dart';
+import 'package:krishidnya/widgets/ads/home_ad_banner.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final logger = AppLogger.instance;
   logger.info('App', 'Krishidnya starting');
   logger.info('App', 'Backend → ${ApiConfig.baseUrl}');
+
+  try {
+    await initializeMobileAds();
+  } catch (e, st) {
+    logger.warning('App', 'AdMob init skipped', details: e.toString());
+    logger.error('App', 'AdMob init error', error: e, stackTrace: st);
+  }
 
   runApp(const ProviderScope(child: KrishidnyaApp()));
 }
@@ -56,12 +65,14 @@ class _KrishidnyaAppState extends ConsumerState<KrishidnyaApp> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(appLocaleProvider);
 
     return MaterialApp.router(
       title: 'Krishidnya',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,

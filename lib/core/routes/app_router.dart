@@ -11,9 +11,15 @@ import 'package:krishidnya/features/auth/presentation/screens/onboarding_screen.
 import 'package:krishidnya/features/auth/presentation/screens/register_screen.dart';
 import 'package:krishidnya/features/auth/presentation/screens/registration_journey_screens.dart';
 import 'package:krishidnya/widgets/common/app_logo.dart';
+import 'package:krishidnya/features/auth/presentation/screens/otp_login_screen.dart';
+import 'package:krishidnya/features/auth/presentation/screens/profile_edit_screen.dart';
 import 'package:krishidnya/features/home/presentation/screens/feature_screens.dart';
+import 'package:krishidnya/features/home/presentation/screens/nearby_farmers_screen.dart';
+import 'package:krishidnya/features/home/presentation/screens/notifications_screen.dart';
+import 'package:krishidnya/features/home/presentation/screens/scheme_detail_screen.dart';
 import 'package:krishidnya/features/home/presentation/screens/schemes_screen.dart';
 import 'package:krishidnya/features/home/presentation/screens/settings_screen.dart';
+import 'package:krishidnya/features/home/presentation/screens/social_screens.dart';
 import 'package:krishidnya/features/home/presentation/screens/weather_forecast_screen.dart';
 import 'package:krishidnya/widgets/navigation/main_shell.dart';
 
@@ -91,6 +97,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: AppRoutes.otpLogin,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const OtpLoginScreen(),
+        ),
+      ),
+      GoRoute(
         path: AppRoutes.register,
         pageBuilder: (context, state) => _sharedAxisPage(
           state,
@@ -157,6 +170,57 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _sharedAxisPage(
           state,
           const SchemesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/schemes/:id',
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          SchemeDetailScreen(
+            schemeId: int.parse(state.pathParameters['id']!),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.chat,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const ChatScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.community,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const CommunityScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const ProfileScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.profileEdit,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const ProfileEditScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const NotificationsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.nearbyFarmers,
+        pageBuilder: (context, state) => _sharedAxisPage(
+          state,
+          const NearbyFarmersScreen(),
         ),
       ),
       GoRoute(

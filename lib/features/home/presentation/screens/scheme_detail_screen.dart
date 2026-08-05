@@ -1,48 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:krishidnya/core/errors/exception_mapper.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
+import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 import 'package:krishidnya/widgets/inputs/app_text_field.dart';
 
-/// Government schemes listing with apply flow.
-class SchemesScreen extends ConsumerWidget {
-  const SchemesScreen({super.key});
+/// Detailed government scheme view with apply flow.
+class SchemeDetailScreen extends ConsumerWidget {
+  const SchemeDetailScreen({required this.schemeId, super.key});
+
+  final int schemeId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final schemesAsync = ref.watch(schemesProvider);
+    final schemeAsync = ref.watch(schemeDetailProvider(schemeId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Government Schemes')),
-      body: schemesAsync.when(
+      appBar: AppBar(title: const Text('Scheme Details')),
+      body: schemeAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
-        error: (e, _) => Center(child: Text('Could not load schemes: $e')),
-        data: (schemes) => schemes.isEmpty
-            ? const Center(child: Text('No schemes available right now'))
-            : ListView.separated(
-                padding: AppSpacing.screenPadding,
-                itemCount: schemes.length,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, i) =>
-                    _SchemeCard(scheme: schemes[i]),
-              ),
+        error: (e, _) => Center(child: Text('Could not load scheme: $e')),
+        data: (scheme) => _SchemeDetailBody(scheme: scheme),
       ),
     );
   }
 }
 
-class _SchemeCard extends ConsumerWidget {
-  const _SchemeCard({required this.scheme});
+class _SchemeDetailBody extends ConsumerWidget {
+  const _SchemeDetailBody({required this.scheme});
 
   final Scheme scheme;
 
@@ -71,20 +63,10 @@ class _SchemeCard extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Apply for ${scheme.title}',
-                style: Theme.of(ctx).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Our team will fill the form for you',
-                style: Theme.of(ctx).textTheme.bodySmall,
-              ),
+              Text('Apply for ${scheme.title}',
+                  style: Theme.of(ctx).textTheme.titleLarge),
               const SizedBox(height: AppSpacing.lg),
-              AppTextField(
-                label: 'Full Name',
-                controller: nameController,
-              ),
+              AppTextField(label: 'Full Name', controller: nameController),
               const SizedBox(height: AppSpacing.md),
               AppTextField(
                 label: 'Mobile Number',
@@ -92,10 +74,7 @@ class _SchemeCard extends ConsumerWidget {
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                label: 'Village Name',
-                controller: villageController,
-              ),
+              AppTextField(label: 'Village Name', controller: villageController),
               const SizedBox(height: AppSpacing.lg),
               PrimaryButton(
                 label: 'Submit Application',
@@ -149,68 +128,54 @@ class _SchemeCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Card(
-      child: Padding(
-        padding: AppSpacing.cardPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xxs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    scheme.schemeType,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
+    return ListView(
+      padding: AppSpacing.screenPadding,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xxs,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.primaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            scheme.schemeType,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
                 ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              scheme.title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              scheme.description,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => context.push('/schemes/${scheme.id}'),
-                    child: const Text('Details'),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: PrimaryButton(
-                    label: 'Apply',
-                    onPressed: () => _showApplySheet(context, ref),
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: AppSpacing.md),
+        Text(scheme.title, style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(height: AppSpacing.md),
+        Text(scheme.description),
+        if (scheme.eligibilityCriteria != null) ...[
+          const SizedBox(height: AppSpacing.lg),
+          Text('Eligibility', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.sm),
+          Text(scheme.eligibilityCriteria!),
+        ],
+        if (scheme.benefits != null) ...[
+          const SizedBox(height: AppSpacing.lg),
+          Text('Benefits', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.sm),
+          Text(scheme.benefits!),
+        ],
+        if (scheme.howToApply != null) ...[
+          const SizedBox(height: AppSpacing.lg),
+          Text('How to Apply', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.sm),
+          Text(scheme.howToApply!),
+        ],
+        const SizedBox(height: AppSpacing.xl),
+        PrimaryButton(
+          label: 'Apply Now',
+          onPressed: () => _showApplySheet(context, ref),
+        ),
+      ],
     );
   }
 }

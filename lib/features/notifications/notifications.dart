@@ -1,4 +1,4 @@
-/// Feature module placeholder — Push and in-app notifications.
-library;
-
-// TODO: Implement notifications feature
+/// Notifications feature exports.
+export 'package:krishidnya/features/home/domain/entities/feature_models.dart'
+    show AppNotification;
+export 'package:krishidnya/features/home/presentation/screens/notifications_screen.dart';

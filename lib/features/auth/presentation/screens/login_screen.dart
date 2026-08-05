@@ -160,6 +160,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ],
                 ).animate().fadeIn(delay: 700.ms),
+                const SizedBox(height: AppSpacing.sm),
+                Center(
+                  child: TextButton(
+                    onPressed: () => context.push(AppRoutes.otpLogin),
+                    child: const Text('Login with OTP instead'),
+                  ),
+                ).animate().fadeIn(delay: 800.ms),
               ],
             ),
           ),

@@ -1,4 +1,5 @@
-/// Feature module placeholder — AI disease detection via camera.
-library;
-
-// TODO: Implement disease detection feature
+/// Disease detection feature exports.
+export 'package:krishidnya/features/home/domain/entities/feature_models.dart'
+    show ScanCropResult;
+export 'package:krishidnya/features/home/presentation/screens/feature_screens.dart'
+    show ScanCropFeatureScreen;

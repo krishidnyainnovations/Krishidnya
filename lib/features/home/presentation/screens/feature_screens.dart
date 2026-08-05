@@ -9,12 +9,18 @@ import 'package:krishidnya/core/errors/exception_mapper.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
+import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
+import 'package:krishidnya/features/home/data/home_repository.dart';
 import 'package:krishidnya/features/home/data/local_farm_storage.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 import 'package:krishidnya/widgets/feedback/empty_state_widget.dart';
 import 'package:krishidnya/widgets/inputs/app_text_field.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 /// AI crop recommendation with Gemini-powered results.
 class CropRecommendationScreen extends ConsumerStatefulWidget {
@@ -32,7 +38,8 @@ class _CropRecommendationScreenState
   String _watering = 'Drip';
   final _areaController = TextEditingController(text: '1');
   bool _loading = false;
-  Map<String, dynamic>? _results;
+  CropRecommendationResult? _results;
+  String? _soilApiSummary;
 
   static const _soils = ['Loamy', 'Clay', 'Sandy', 'Black', 'Red'];
   static const _seasons = ['Kharif', 'Rabi', 'Zaid'];
@@ -54,6 +61,24 @@ class _CropRecommendationScreenState
     final weather = ref.read(homeWeatherProvider).valueOrNull;
     final area = double.tryParse(_areaController.text.trim()) ?? 1;
 
+    if (user?.latitude != null && user?.longitude != null) {
+      final soilResult = await ref.read(homeRepositoryProvider).getSoilData(
+            latitude: user!.latitude!,
+            longitude: user.longitude!,
+          );
+      if (soilResult case Success(:final data)) {
+        _soilApiSummary = data.toString();
+        final storage = await ref.read(localFarmStorageProvider.future);
+        await storage.addSoilHistory(SoilHistoryEntry(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          soilType: data['soil_type'] as String? ?? _soilType,
+          location: user.location ?? 'Farm',
+          summary: data.toString(),
+          createdAt: DateTime.now(),
+        ));
+      }
+    }
+
     final result = await ref.read(homeRepositoryProvider).getCropRecommendations(
           soilType: _soilType,
           season: _season,
@@ -63,16 +88,16 @@ class _CropRecommendationScreenState
           weatherSummary: weather != null
               ? '${weather.temperature}, ${weather.condition}, humidity ${weather.humidity ?? "N/A"}'
               : null,
+          soilApiData: _soilApiSummary,
         );
 
     if (!mounted) return;
 
     switch (result) {
       case Success(:final data):
-        final parsed = _parseRecommendationResponse(data);
         setState(() {
           _loading = false;
-          _results = parsed;
+          _results = data;
         });
         final storage = await ref.read(localFarmStorageProvider.future);
         await storage.addHistory(HistoryEntry(
@@ -87,34 +112,6 @@ class _CropRecommendationScreenState
         setState(() => _loading = false);
         AppSnackBar.error(context, failure.message);
     }
-  }
-
-  Map<String, dynamic> _parseRecommendationResponse(Map<String, dynamic> data) {
-    final reply = data['response'] as String? ?? data['message'] as String? ?? '';
-    try {
-      final start = reply.indexOf('{');
-      final end = reply.lastIndexOf('}');
-      if (start >= 0 && end > start) {
-        return jsonDecode(reply.substring(start, end + 1)) as Map<String, dynamic>;
-      }
-    } catch (_) {}
-    return {
-      'weather_analysis': {
-        'temperature': 'See analysis below',
-        'humidity': '—',
-        'expected_rain': '—',
-      },
-      'crops': [
-        {
-          'name': 'AI Recommendation',
-          'why': reply.isNotEmpty ? reply : 'Could not parse structured response.',
-          'water_required': '—',
-          'days_to_harvest': '—',
-          'growing_period': '—',
-          'expected_profit': '—',
-        },
-      ],
-    };
   }
 
   @override
@@ -164,15 +161,11 @@ class _CropRecommendationScreenState
           ),
           if (_results != null) ...[
             const SizedBox(height: AppSpacing.xl),
-            _WeatherAnalysisCard(
-              analysis: _results!['weather_analysis'] as Map<String, dynamic>? ?? {},
-            ),
+            _WeatherAnalysisCard(analysis: _results!.weatherAnalysis),
             const SizedBox(height: AppSpacing.lg),
             Text('Top Crop Picks', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: AppSpacing.sm),
-            ...((_results!['crops'] as List<dynamic>? ?? []).map(
-              (c) => _CropExpandableCard(crop: c as Map<String, dynamic>),
-            )),
+            ..._results!.crops.map((c) => _CropExpandableCard(crop: c)),
           ],
         ],
       ),
@@ -182,7 +175,7 @@ class _CropRecommendationScreenState
 
 class _WeatherAnalysisCard extends StatelessWidget {
   const _WeatherAnalysisCard({required this.analysis});
-  final Map<String, dynamic> analysis;
+  final WeatherAnalysis analysis;
 
   @override
   Widget build(BuildContext context) {
@@ -195,9 +188,9 @@ class _WeatherAnalysisCard extends StatelessWidget {
           children: [
             Text('Weather Analysis', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: AppSpacing.sm),
-            _Row('Temperature', analysis['temperature']?.toString() ?? '—'),
-            _Row('Humidity', analysis['humidity']?.toString() ?? '—'),
-            _Row('Expected Rain', analysis['expected_rain']?.toString() ?? '—'),
+            _Row('Temperature', analysis.temperature),
+            _Row('Humidity', analysis.humidity),
+            _Row('Expected Rain', analysis.expectedRain),
           ],
         ),
       ),
@@ -226,7 +219,7 @@ class _Row extends StatelessWidget {
 
 class _CropExpandableCard extends StatelessWidget {
   const _CropExpandableCard({required this.crop});
-  final Map<String, dynamic> crop;
+  final RecommendedCrop crop;
 
   @override
   Widget build(BuildContext context) {
@@ -236,13 +229,13 @@ class _CropExpandableCard extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor: AppColors.primaryContainer,
           child: Text(
-            (crop['name'] as String? ?? '?')[0].toUpperCase(),
+            crop.name[0].toUpperCase(),
             style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
           ),
         ),
-        title: Text(crop['name'] as String? ?? 'Crop'),
+        title: Text(crop.name),
         subtitle: Text(
-          'Harvest: ${crop['days_to_harvest'] ?? '—'} · Profit: ${crop['expected_profit'] ?? '—'}',
+          'Harvest: ${crop.daysToHarvest ?? '—'} · Profit: ${crop.expectedProfit ?? '—'}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         children: [
@@ -251,11 +244,11 @@ class _CropExpandableCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _DetailRow('Why grow', crop['why']),
-                _DetailRow('Water required', crop['water_required']),
-                _DetailRow('Days to harvest', crop['days_to_harvest']),
-                _DetailRow('Growing period', crop['growing_period']),
-                _DetailRow('Expected profit', crop['expected_profit']),
+                _DetailRow('Why grow', crop.why),
+                _DetailRow('Water required', crop.waterRequired),
+                _DetailRow('Days to harvest', crop.daysToHarvest),
+                _DetailRow('Growing period', crop.growingPeriod),
+                _DetailRow('Expected profit', crop.expectedProfit),
               ],
             ),
           ),
@@ -332,7 +325,7 @@ class ScanCropFeatureScreen extends ConsumerStatefulWidget {
 class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
   final _picker = ImagePicker();
   bool _loading = false;
-  Map<String, dynamic>? _result;
+  ScanCropResult? _result;
   String? _imagePath;
 
   Future<void> _pickAndScan(ImageSource source) async {
@@ -351,21 +344,17 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
 
     switch (scanResult) {
       case Success(:final data):
+        final parsed = ScanCropResult.fromJson(data);
         setState(() {
           _loading = false;
-          _result = data;
+          _result = parsed;
         });
-        final disease = data['disease'] as String? ??
-            data['diagnosis'] as String? ??
-            'Crop scan';
         final storage = await ref.read(localFarmStorageProvider.future);
         await storage.addHistory(HistoryEntry(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           type: 'scan',
-          title: disease,
-          summary: data['organic_cure'] as String? ??
-              data['recommendation'] as String? ??
-              'Scan completed',
+          title: parsed.disease,
+          summary: parsed.organicCure ?? parsed.chemicalCure ?? 'Scan completed',
           createdAt: DateTime.now(),
         ));
         ref.invalidate(farmHistoryProvider);
@@ -460,21 +449,10 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
 
 class _ScanResultCard extends StatelessWidget {
   const _ScanResultCard({required this.result});
-  final Map<String, dynamic> result;
+  final ScanCropResult result;
 
   @override
   Widget build(BuildContext context) {
-    final disease = result['disease'] as String? ??
-        result['diagnosis'] as String? ??
-        result['condition'] as String? ??
-        'Analysis Result';
-    final organic = result['organic_cure'] as String? ??
-        result['organic_treatment'] as String?;
-    final chemical = result['chemical_cure'] as String? ??
-        result['chemical_treatment'] as String?;
-    final confidence = result['confidence'] as String? ??
-        result['confidence_score']?.toString();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -482,33 +460,44 @@ class _ScanResultCard extends StatelessWidget {
           color: AppColors.error.withValues(alpha: 0.08),
           child: ListTile(
             leading: const Icon(Icons.warning_amber_rounded, color: AppColors.error),
-            title: Text(disease, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: confidence != null ? Text('Confidence: $confidence') : null,
+            title: Text(result.disease, style: const TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: result.confidence != null ? Text('Confidence: ${result.confidence}') : null,
           ),
         ),
-        if (organic != null) ...[
+        if (result.organicCure != null) ...[
           const SizedBox(height: AppSpacing.md),
           _CureCard(
             title: 'Organic Cure (Recommended)',
-            content: organic,
+            content: result.dosage != null
+                ? '${result.organicCure}\n\nDosage: ${result.dosage}'
+                : result.organicCure!,
             color: AppColors.primary,
             icon: Icons.eco,
           ),
         ],
-        if (chemical != null) ...[
+        if (result.chemicalCure != null) ...[
           const SizedBox(height: AppSpacing.sm),
           _CureCard(
             title: 'Chemical Cure',
-            content: chemical,
+            content: result.chemicalCure!,
             color: AppColors.accent,
             icon: Icons.science_outlined,
           ),
         ],
-        if (organic == null && chemical == null)
+        if (result.products != null) ...[
+          const SizedBox(height: AppSpacing.sm),
+          _CureCard(
+            title: 'Recommended Products',
+            content: result.products!,
+            color: AppColors.secondary,
+            icon: Icons.shopping_bag_outlined,
+          ),
+        ],
+        if (result.organicCure == null && result.chemicalCure == null)
           Card(
             child: Padding(
               padding: AppSpacing.cardPadding,
-              child: Text(result.toString()),
+              child: Text(result.raw.toString()),
             ),
           ),
       ],
@@ -566,11 +555,20 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
   final _stateController = TextEditingController(text: 'Maharashtra');
   Map<String, dynamic>? _prices;
   bool _loading = false;
+  List<String> _favorites = [];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _fetch());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final user = ref.read(currentUserProvider).valueOrNull;
+      if (user?.state != null) {
+        _stateController.text = user!.state!;
+      }
+      final mandiPrefs = await ref.read(mandiPreferencesProvider.future);
+      setState(() => _favorites = mandiPrefs.getFavorites());
+      await _fetch();
+    });
   }
 
   @override
@@ -582,8 +580,11 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
 
   Future<void> _fetch() async {
     setState(() => _loading = true);
+    final crop = _commodityController.text.trim();
+    final mandiPrefs = await ref.read(mandiPreferencesProvider.future);
+    await mandiPrefs.addRecent(crop);
     final result = await ref.read(homeRepositoryProvider).getMandiPrices(
-          commodity: _commodityController.text.trim(),
+          commodity: crop,
           state: _stateController.text.trim(),
         );
     if (!mounted) return;
@@ -606,11 +607,36 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
           AppTextField(label: 'Crop', controller: _commodityController),
           const SizedBox(height: AppSpacing.md),
           AppTextField(label: 'State', controller: _stateController),
+          if (_favorites.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.xs,
+              children: _favorites.map((f) {
+                return ActionChip(
+                  label: Text(f),
+                  onPressed: () {
+                    _commodityController.text = f;
+                    _fetch();
+                  },
+                );
+              }).toList(),
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           PrimaryButton(
             label: 'Fetch Today\'s Prices',
             isLoading: _loading,
             onPressed: _fetch,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextButton(
+            onPressed: () async {
+              final mandiPrefs = await ref.read(mandiPreferencesProvider.future);
+              await mandiPrefs.addFavorite(_commodityController.text.trim());
+              setState(() => _favorites = mandiPrefs.getFavorites());
+              AppSnackBar.success(context, 'Added to favorites');
+            },
+            child: const Text('Save crop to favorites'),
           ),
           const SizedBox(height: AppSpacing.lg),
           if (_prices != null) _MandiPricesList(data: _prices!),
@@ -635,7 +661,7 @@ class _MandiPricesList extends StatelessWidget {
       );
     }
 
-    final records = _extractRecords(data);
+    final records = parseMandiRecords(data);
     if (records.isEmpty) {
       return const Card(
         child: Padding(
@@ -675,21 +701,6 @@ class _MandiPricesList extends StatelessWidget {
     );
   }
 
-  List<Map<String, dynamic>> _extractRecords(Map<String, dynamic> data) {
-    if (data['records'] is List) {
-      return (data['records'] as List).cast<Map<String, dynamic>>();
-    }
-    if (data['data'] is List) {
-      return (data['data'] as List).map((e) {
-        if (e is Map<String, dynamic>) return e;
-        return <String, dynamic>{'price': e.toString()};
-      }).toList();
-    }
-    if (data['prices'] is List) {
-      return (data['prices'] as List).cast<Map<String, dynamic>>();
-    }
-    return [data];
-  }
 }
 
 /// Marketplace — farmer-to-farmer trading.
@@ -742,6 +753,7 @@ class MarketplaceScreen extends ConsumerWidget {
                     final p = products[i];
                     return Card(
                       child: ListTile(
+                        onTap: () => _showProductDetail(context, ref, p),
                         leading: CircleAvatar(
                           backgroundColor: AppColors.primaryContainer,
                           child: Text(p.category[0].toUpperCase()),
@@ -759,12 +771,47 @@ class MarketplaceScreen extends ConsumerWidget {
     );
   }
 
+  void _showProductDetail(BuildContext context, WidgetRef ref, Product p) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => Padding(
+        padding: AppSpacing.screenPadding,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(p.name, style: Theme.of(ctx).textTheme.titleLarge),
+            Text('${p.category} · ₹${p.price.toStringAsFixed(0)}/${p.unit}'),
+            if (p.description != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(p.description!),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            PrimaryButton(
+              label: 'Contact Seller',
+              onPressed: () async {
+                final uri = Uri.parse('tel:+919999999999');
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri);
+                } else {
+                  AppSnackBar.error(context, 'Could not open phone dialer');
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showListDialog(BuildContext context, WidgetRef ref) {
     final nameCtrl = TextEditingController();
     final categoryCtrl = TextEditingController(text: 'Machinery');
     final priceCtrl = TextEditingController();
     final unitCtrl = TextEditingController(text: 'day');
     final descCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
+    var listingType = 'rent';
 
     showModalBottomSheet<void>(
       context: context,
@@ -776,11 +823,21 @@ class MarketplaceScreen extends ConsumerWidget {
           top: AppSpacing.lg,
           bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
         ),
-        child: Column(
+        child: StatefulBuilder(
+          builder: (ctx, setState) => Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('List an Item', style: Theme.of(ctx).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.md),
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: 'rent', label: Text('Rent')),
+                ButtonSegment(value: 'sell', label: Text('Sell')),
+              ],
+              selected: {listingType},
+              onSelectionChanged: (v) => setState(() => listingType = v.first),
+            ),
             const SizedBox(height: AppSpacing.md),
             AppTextField(label: 'Item Name', controller: nameCtrl),
             const SizedBox(height: AppSpacing.sm),
@@ -789,6 +846,8 @@ class MarketplaceScreen extends ConsumerWidget {
             AppTextField(label: 'Price', controller: priceCtrl, keyboardType: TextInputType.number),
             const SizedBox(height: AppSpacing.sm),
             AppTextField(label: 'Unit (day, kg, piece)', controller: unitCtrl),
+            const SizedBox(height: AppSpacing.sm),
+            AppTextField(label: 'Contact Phone', controller: phoneCtrl, keyboardType: TextInputType.phone),
             const SizedBox(height: AppSpacing.sm),
             AppTextField(label: 'Description', controller: descCtrl),
             const SizedBox(height: AppSpacing.lg),
@@ -800,12 +859,16 @@ class MarketplaceScreen extends ConsumerWidget {
                   AppSnackBar.error(ctx, 'Enter name and price');
                   return;
                 }
+                final user = ref.read(currentUserProvider).valueOrNull;
                 final result = await ref.read(homeRepositoryProvider).createProduct(
                       name: nameCtrl.text.trim(),
                       category: categoryCtrl.text.trim(),
                       price: price,
                       unit: unitCtrl.text.trim(),
                       description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
+                      listingType: listingType,
+                      state: user?.state,
+                      contactPhone: phoneCtrl.text.trim().isEmpty ? user?.mobile : phoneCtrl.text.trim(),
                     );
                 if (!ctx.mounted) return;
                 switch (result) {
@@ -820,12 +883,13 @@ class MarketplaceScreen extends ConsumerWidget {
             ),
           ],
         ),
+        ),
       ),
     );
   }
 }
 
-/// Crop & soil scan history.
+/// Crop & soil scan history with export.
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
 
@@ -834,7 +898,19 @@ class HistoryScreen extends ConsumerWidget {
     final historyAsync = ref.watch(farmHistoryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('History')),
+      appBar: AppBar(
+        title: const Text('History'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Export',
+            onPressed: () async {
+              final storage = await ref.read(localFarmStorageProvider.future);
+              await Share.share(storage.exportHistoryCsv(), subject: 'Krishidnya Farm History');
+            },
+          ),
+        ],
+      ),
       body: historyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (_, __) => const EmptyStateWidget(
@@ -857,7 +933,11 @@ class HistoryScreen extends ConsumerWidget {
                   return Card(
                     child: ListTile(
                       leading: Icon(
-                        e.type == 'scan' ? Icons.document_scanner_outlined : Icons.eco_rounded,
+                        e.type == 'scan'
+                            ? Icons.document_scanner_outlined
+                            : e.type == 'soil'
+                                ? Icons.grass_outlined
+                                : Icons.eco_rounded,
                         color: AppColors.primary,
                       ),
                       title: Text(e.title),
@@ -887,11 +967,22 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     final cropsAsync = ref.watch(farmCropsProvider);
+    final monthlyIncomeAsync = ref.watch(monthlyIncomeProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Farm Analytics'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud_upload_outlined),
+            tooltip: 'Sync to cloud',
+            onPressed: () async {
+              await syncFarmData(ref);
+              if (context.mounted) {
+                AppSnackBar.success(context, 'Farm data synced');
+              }
+            },
+          ),
           TextButton.icon(
             onPressed: () => _showAddCropDialog(context),
             icon: const Icon(Icons.add),
@@ -918,14 +1009,46 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                   onPressed: () => _showAddCropDialog(context),
                 ),
               )
-            : ListView.separated(
+            : ListView(
                 padding: AppSpacing.screenPadding,
-                itemCount: crops.length,
-                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, i) => _CropAnalyticsCard(
-                  crop: crops[i],
-                  onTap: () => _showCropDetail(context, crops[i]),
-                ),
+                children: [
+                  monthlyIncomeAsync.when(
+                    data: (income) => Card(
+                      color: AppColors.primaryContainer.withValues(alpha: 0.3),
+                      child: ListTile(
+                        title: const Text('Monthly Income'),
+                        subtitle: Text('This month from harvested crops'),
+                        trailing: Text(
+                          '₹${income.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  ...List.generate(crops.length, (i) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: _CropAnalyticsCard(
+                        crop: crops[i],
+                        onTap: () => _showCropDetail(context, crops[i]),
+                        onDelete: () async {
+                          final storage =
+                              await ref.read(localFarmStorageProvider.future);
+                          await storage.deleteCrop(crops[i].id);
+                          ref.invalidate(farmCropsProvider);
+                          ref.invalidate(monthlyIncomeProvider);
+                        },
+                      ),
+                    );
+                  }),
+                ],
               ),
       ),
     );
@@ -995,9 +1118,14 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
 }
 
 class _CropAnalyticsCard extends StatelessWidget {
-  const _CropAnalyticsCard({required this.crop, required this.onTap});
+  const _CropAnalyticsCard({
+    required this.crop,
+    required this.onTap,
+    required this.onDelete,
+  });
   final FarmCrop crop;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -1010,20 +1138,29 @@ class _CropAnalyticsCard extends StatelessWidget {
         ),
         title: Text(crop.name),
         subtitle: Text('${crop.area} acres · Sown ${crop.sowingDate}'),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text('₹${crop.totalExpenses.toStringAsFixed(0)}',
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            if (crop.profit != null)
-              Text(
-                'Profit ₹${crop.profit!.toStringAsFixed(0)}',
-                style: TextStyle(
-                  color: crop.profit! >= 0 ? AppColors.primary : AppColors.error,
-                  fontSize: 12,
-                ),
-              ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text('₹${crop.totalExpenses.toStringAsFixed(0)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                if (crop.profit != null)
+                  Text(
+                    'Profit ₹${crop.profit!.toStringAsFixed(0)}',
+                    style: TextStyle(
+                      color: crop.profit! >= 0 ? AppColors.primary : AppColors.error,
+                      fontSize: 12,
+                    ),
+                  ),
+              ],
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: AppColors.error),
+              onPressed: onDelete,
+            ),
           ],
         ),
       ),
@@ -1141,6 +1278,7 @@ class _CropDetailScreenState extends ConsumerState<_CropDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final categories = _crop.expensesByCategory();
     return Scaffold(
       appBar: AppBar(title: Text(_crop.name)),
       floatingActionButton: FloatingActionButton.extended(
@@ -1168,6 +1306,26 @@ class _CropDetailScreenState extends ConsumerState<_CropDetailScreen> {
               ),
             ),
           ),
+          if (categories.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            Text('Expense Breakdown', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              height: 180,
+              child: PieChart(
+                PieChartData(
+                  sections: categories.entries.map((e) {
+                    return PieChartSectionData(
+                      value: e.value,
+                      title: e.key,
+                      radius: 50,
+                      titleStyle: const TextStyle(fontSize: 10, color: Colors.white),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.md),
           if (_crop.sellingValue == null)
             PrimaryButton(label: 'Record Harvest & Sale', onPressed: _recordHarvest),

@@ -9,6 +9,7 @@ import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 import 'package:krishidnya/features/home/domain/quick_actions.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
 import 'package:krishidnya/features/home/presentation/widgets/home_widgets.dart';
+import 'package:krishidnya/widgets/ads/home_ad_banner.dart';
 import 'package:krishidnya/widgets/common/app_logo.dart';
 
 /// Main home screen with banners and quick actions.
@@ -118,17 +119,15 @@ class _HomeBody extends StatelessWidget {
                         weatherAsync: weatherAsync,
                         onTap: () => context.push(AppRoutes.weatherForecast),
                       ),
-                      PromoBanner(
-                        title: 'Sponsored',
-                        subtitle: 'Farm tools, seeds & services — special offers',
-                        icon: Icons.campaign_outlined,
-                        gradient: AppColors.sunsetGradient,
-                        onTap: () => context.push(AppRoutes.marketplace),
+                      StaggeredFadeIn(
+                        index: 2,
+                        child: HomeAdBanner(
+                          onFallbackTap: () => context.push(AppRoutes.marketplace),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
                 StaggeredFadeIn(
                   index: 2,
                   child: Text(

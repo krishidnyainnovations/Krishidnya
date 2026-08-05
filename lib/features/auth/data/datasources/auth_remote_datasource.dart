@@ -128,6 +128,82 @@ class AuthRemoteDataSource {
     return User.fromJson(response.data!);
   }
 
+  Future<User> updateUser({
+    String? fullName,
+    String? email,
+    String? location,
+    String? city,
+    String? state,
+  }) async {
+    final response = await _apiClient.put<Map<String, dynamic>>(
+      ApiConfig.updateUser,
+      data: {
+        if (fullName != null) 'full_name': fullName,
+        if (email != null) 'email': email,
+        if (location != null) 'location': location,
+        if (city != null) 'city': city,
+        if (state != null) 'state': state,
+      },
+    );
+    return User.fromJson(response.data!);
+  }
+
+  Future<User> updateLocation({
+    required double latitude,
+    required double longitude,
+    String? location,
+    String? city,
+    String? state,
+  }) async {
+    final response = await _apiClient.put<Map<String, dynamic>>(
+      ApiConfig.updateLocation,
+      data: {
+        'latitude': latitude,
+        'longitude': longitude,
+        if (location != null) 'location': location,
+        if (city != null) 'city': city,
+        if (state != null) 'state': state,
+      },
+    );
+    return User.fromJson(response.data!);
+  }
+
+  Future<void> sendOtp(String mobile) async {
+    await _apiClient.post<Map<String, dynamic>>(
+      ApiConfig.sendOtp,
+      data: {'mobile': mobile},
+    );
+  }
+
+  Future<AuthResponse> verifyOtp({
+    required String mobile,
+    required String otp,
+  }) async {
+    final response = await _apiClient.post<Map<String, dynamic>>(
+      ApiConfig.verifyOtp,
+      data: {'mobile': mobile, 'otp': otp},
+    );
+
+    final token = TokenResponse.fromJson(response.data!);
+    await _storage.write(AppConstants.accessTokenKey, token.accessToken);
+
+    final user = await _fetchCurrentUser() ??
+        User(id: '', username: mobile, mobile: mobile);
+
+    await _persistToken(token.accessToken, user.id);
+
+    return AuthResponse(
+      accessToken: token.accessToken,
+      tokenType: token.tokenType,
+      user: user,
+    );
+  }
+
+  Future<void> deleteAccount() async {
+    await _apiClient.delete<Map<String, dynamic>>(ApiConfig.currentUser);
+    await _storage.deleteAll();
+  }
+
   Future<void> _persistToken(String token, String userId) async {
     await _storage.write(AppConstants.accessTokenKey, token);
     if (userId.isNotEmpty) {
