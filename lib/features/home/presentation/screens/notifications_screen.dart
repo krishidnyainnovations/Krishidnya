@@ -4,6 +4,7 @@ import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/feedback/empty_state_widget.dart';
 
 /// In-app notification center with read-state tracking.
@@ -39,7 +40,9 @@ class NotificationsScreen extends ConsumerWidget {
             if (n.createdAt.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.xs),
               Text(
-                n.createdAt.length > 10 ? n.createdAt.substring(0, 10) : n.createdAt,
+                n.createdAt.length > 10
+                    ? n.createdAt.substring(0, 10)
+                    : n.createdAt,
                 style: Theme.of(ctx).textTheme.bodySmall,
               ),
             ],
@@ -54,17 +57,18 @@ class NotificationsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final notificationsAsync = ref.watch(notificationsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(l10n.notifications),
         actions: [
           notificationsAsync.maybeWhen(
             data: (items) => items.any((n) => !n.isRead)
                 ? TextButton(
                     onPressed: () => _markAllAsRead(ref, items),
-                    child: const Text('Mark all read'),
+                    child: Text(l10n.markAllRead),
                   )
                 : const SizedBox.shrink(),
             orElse: () => const SizedBox.shrink(),
@@ -79,15 +83,15 @@ class NotificationsScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
-        error: (_, __) => const EmptyStateWidget(
-          title: 'No notifications',
-          subtitle: 'Weather alerts, scheme updates, and community activity appear here.',
+        error: (_, __) => EmptyStateWidget(
+          title: l10n.noNotifications,
+          subtitle: l10n.notificationsEmptySubtitle,
           icon: Icons.notifications_none,
         ),
         data: (items) => items.isEmpty
-            ? const EmptyStateWidget(
-                title: 'All caught up',
-                subtitle: 'You have no new notifications.',
+            ? EmptyStateWidget(
+                title: l10n.allCaughtUp,
+                subtitle: l10n.noNewNotifications,
                 icon: Icons.notifications_none,
               )
             : ListView.separated(
@@ -105,7 +109,9 @@ class NotificationsScreen extends ConsumerWidget {
                       onTap: () => _showDetail(context, ref, n),
                       leading: Icon(
                         Icons.notifications_active_outlined,
-                        color: n.isRead ? AppColors.textTertiary : AppColors.primary,
+                        color: n.isRead
+                            ? AppColors.textTertiary
+                            : AppColors.primary,
                       ),
                       title: Text(
                         n.title,
@@ -114,7 +120,11 @@ class NotificationsScreen extends ConsumerWidget {
                               n.isRead ? FontWeight.normal : FontWeight.w700,
                         ),
                       ),
-                      subtitle: Text(n.body, maxLines: 2, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(
+                        n.body,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       trailing: n.createdAt.isNotEmpty
                           ? Text(
                               n.createdAt.length > 10

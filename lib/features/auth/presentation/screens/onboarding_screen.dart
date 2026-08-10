@@ -5,6 +5,7 @@ import 'package:krishidnya/core/constants/app_constants.dart';
 import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/common/app_logo.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -21,41 +22,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
 
-  static const _pages = [
-    _OnboardingPageData(
-      title: 'Every season brings challenges',
-      subtitle:
-          'Unpredictable weather, crop diseases, and rising costs make farming harder every day.',
-      icon: Icons.cloud_off_rounded,
-      gradient: LinearGradient(
-        colors: [Color(0xFF6B705C), Color(0xFF354F52)],
-      ),
-    ),
-    _OnboardingPageData(
-      title: 'Technology can help',
-      subtitle:
-          'Smart insights and real-time data can turn uncertainty into informed decisions.',
-      icon: Icons.insights_rounded,
-      gradient: LinearGradient(
-        colors: [Color(0xFF40916C), Color(0xFF2D6A4F)],
-      ),
-    ),
-    _OnboardingPageData(
-      title: 'AI becomes your partner',
-      subtitle:
-          'Detect diseases early, track your crops, and get personalized recommendations.',
-      icon: Icons.psychology_rounded,
-      gradient: LinearGradient(
-        colors: [Color(0xFF0077B6), Color(0xFF023E8A)],
-      ),
-    ),
-    _OnboardingPageData(
-      title: 'Welcome to Krishidnya',
-      subtitle: "Your farm, understood. Let's grow together.",
-      icon: Icons.eco_rounded,
-      gradient: AppColors.primaryGradient,
-    ),
-  ];
+  List<_OnboardingPageData> _pages(AppLocalizations l10n) => [
+        _OnboardingPageData(
+          title: l10n.onboardingPage1Title,
+          subtitle: l10n.onboardingPage1Subtitle,
+          icon: Icons.cloud_off_rounded,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6B705C), Color(0xFF354F52)],
+          ),
+        ),
+        _OnboardingPageData(
+          title: l10n.onboardingPage2Title,
+          subtitle: l10n.onboardingPage2Subtitle,
+          icon: Icons.insights_rounded,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF40916C), Color(0xFF2D6A4F)],
+          ),
+        ),
+        _OnboardingPageData(
+          title: l10n.onboardingPage3Title,
+          subtitle: l10n.onboardingPage3Subtitle,
+          icon: Icons.psychology_rounded,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0077B6), Color(0xFF023E8A)],
+          ),
+        ),
+        _OnboardingPageData(
+          title: l10n.onboardingPage4Title,
+          subtitle: l10n.onboardingPage4Subtitle,
+          icon: Icons.eco_rounded,
+          gradient: AppColors.primaryGradient,
+        ),
+      ];
 
   @override
   void dispose() {
@@ -63,8 +61,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
+  void _nextPage(int pageCount) {
+    if (_currentPage < pageCount - 1) {
       _pageController.nextPage(
         duration: AppConstants.animationNormal,
         curve: Curves.easeInOutCubic,
@@ -76,8 +74,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final pages = _pages(l10n);
     final theme = Theme.of(context);
-    final isLastPage = _currentPage == _pages.length - 1;
+    final isLastPage = _currentPage == pages.length - 1;
 
     return Scaffold(
       body: SafeArea(
@@ -88,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: TextButton(
                 onPressed: () => context.go(AppRoutes.login),
                 child: Text(
-                  'Skip',
+                  l10n.skip,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -99,9 +99,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: (index) => setState(() => _currentPage = index),
-                itemCount: _pages.length,
+                itemCount: pages.length,
                 itemBuilder: (context, index) {
-                  final page = _pages[index];
+                  final page = pages[index];
                   return _OnboardingPage(
                     data: page,
                     isActive: index == _currentPage,
@@ -115,7 +115,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   SmoothPageIndicator(
                     controller: _pageController,
-                    count: _pages.length,
+                    count: pages.length,
                     effect: const ExpandingDotsEffect(
                       dotHeight: 8,
                       dotWidth: 8,
@@ -125,15 +125,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   PrimaryButton(
-                    label: isLastPage ? 'Get Started' : 'Next',
-                    onPressed: _nextPage,
+                    label: isLastPage ? l10n.getStarted : l10n.next,
+                    onPressed: () => _nextPage(pages.length),
                     icon: isLastPage ? Icons.arrow_forward_rounded : null,
                   ),
                   if (!isLastPage) ...[
                     const SizedBox(height: AppSpacing.sm),
                     TextButton(
                       onPressed: () => context.go(AppRoutes.login),
-                      child: const Text('Already have an account? Login'),
+                      child: Text(l10n.alreadyHaveAccountLogin),
                     ),
                   ],
                 ],

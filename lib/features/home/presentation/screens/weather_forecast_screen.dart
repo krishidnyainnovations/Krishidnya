@@ -5,6 +5,7 @@ import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/cards/weather_card.dart';
 
 /// 15-day weather forecast screen.
@@ -13,18 +14,19 @@ class WeatherForecastScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final weatherAsync = ref.watch(homeWeatherProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Weather Forecast')),
+      appBar: AppBar(title: Text(l10n.weatherForecast)),
       body: weatherAsync.when(
-        loading: () => const Center(
+        loading: () => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(color: AppColors.primary),
-              SizedBox(height: AppSpacing.md),
-              Text("Looking at today's sky..."),
+              const CircularProgressIndicator(color: AppColors.primary),
+              const SizedBox(height: AppSpacing.md),
+              Text(l10n.checkingSky),
             ],
           ),
         ),
@@ -43,7 +45,7 @@ class WeatherForecastScreen extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.lg),
                 FilledButton(
                   onPressed: () => context.push(AppRoutes.profileEdit),
-                  child: const Text('Update Location in Profile'),
+                  child: Text(l10n.updateLocationInProfile),
                 ),
               ],
             ),
@@ -61,7 +63,7 @@ class WeatherForecastScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              '15-Day Extended Forecast',
+              l10n.extendedForecast,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -72,14 +74,11 @@ class WeatherForecastScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Forecast data is loading from your location. '
-                        'If this persists, ensure your profile has GPS coordinates set.',
-                      ),
+                      Text(l10n.forecastLoadingHint),
                       const SizedBox(height: AppSpacing.md),
                       OutlinedButton(
                         onPressed: () => ref.invalidate(homeWeatherProvider),
-                        child: const Text('Retry'),
+                        child: Text(l10n.retry),
                       ),
                     ],
                   ),

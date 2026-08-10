@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/inputs/app_text_field.dart';
 
@@ -57,6 +58,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -77,46 +79,46 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  "Let's get to know you",
+                  l10n.createAccountTitle,
                   style: theme.textTheme.headlineMedium,
                 ).animate().fadeIn().slideY(begin: 0.1, end: 0),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Tell us a little about yourself to personalize your experience',
+                  l10n.createAccountSubtitle,
                   style: theme.textTheme.bodyMedium,
                 ).animate().fadeIn(delay: 100.ms),
                 const SizedBox(height: AppSpacing.xl),
                 AppTextField(
-                  label: 'Full Name',
+                  label: l10n.fullName,
                   controller: _fullNameController,
-                  hint: 'e.g. Tejas Barguje',
+                  hint: l10n.fullNameHint,
                   textInputAction: TextInputAction.next,
                   prefixIcon: const Icon(Icons.person_outline_rounded),
                   autofillHints: const [AutofillHints.name],
                   validator: (v) =>
-                      v == null || v.trim().isEmpty ? 'Name is required' : null,
+                      v == null || v.trim().isEmpty ? l10n.nameRequired : null,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppTextField(
-                  label: 'Email',
+                  label: l10n.email,
                   controller: _emailController,
-                  hint: 'your@email.com',
+                  hint: l10n.emailHint,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   prefixIcon: const Icon(Icons.email_outlined),
                   autofillHints: const [AutofillHints.email],
                   validator: (v) {
                     if (v == null || !v.contains('@')) {
-                      return 'Please enter a valid email';
+                      return l10n.validEmail;
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppTextField(
-                  label: 'Mobile Number',
+                  label: l10n.mobileNumber,
                   controller: _mobileController,
-                  hint: '10-digit mobile number',
+                  hint: l10n.mobileHint,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                   prefixIcon: const Icon(Icons.phone_outlined),
@@ -124,13 +126,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(10),
                   ],
-                  validator: (v) => v == null || v.length < 10
-                      ? 'Enter a valid 10-digit number'
-                      : null,
+                  validator: (v) =>
+                      v == null || v.length < 10 ? l10n.validMobile : null,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppTextField(
-                  label: 'Password',
+                  label: l10n.password,
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.next,
@@ -143,12 +144,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: (v) => v == null || v.length < 6
-                      ? 'Password must be at least 6 characters'
+                      ? l10n.passwordMinLength
                       : null,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppTextField(
-                  label: 'Confirm Password',
+                  label: l10n.confirmPassword,
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirm,
                   textInputAction: TextInputAction.done,
@@ -162,14 +163,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   validator: (v) {
                     if (v != _passwordController.text) {
-                      return 'Passwords do not match';
+                      return l10n.passwordsNoMatch;
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 PrimaryButton(
-                  label: 'Continue',
+                  label: l10n.continueLabel,
                   onPressed: _continue,
                   icon: Icons.arrow_forward_rounded,
                 ),

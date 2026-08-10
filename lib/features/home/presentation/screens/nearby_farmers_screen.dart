@@ -1,11 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 import 'package:krishidnya/widgets/feedback/empty_state_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,34 +13,39 @@ import 'package:url_launcher/url_launcher.dart';
 class NearbyFarmersScreen extends ConsumerWidget {
   const NearbyFarmersScreen({super.key});
 
-  Future<void> _callFarmer(BuildContext context, String phone) async {
+  Future<void> _callFarmer(
+    BuildContext context,
+    AppLocalizations l10n,
+    String phone,
+  ) async {
     final uri = Uri.parse('tel:$phone');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else if (context.mounted) {
-      AppSnackBar.error(context, 'Could not open phone dialer');
+      AppSnackBar.error(context, l10n.couldNotOpenDialer);
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final farmersAsync = ref.watch(nearbyFarmersProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nearby Farmers')),
+      appBar: AppBar(title: Text(l10n.nearbyFarmers)),
       body: farmersAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
         error: (e, _) => EmptyStateWidget(
-          title: 'Nearby farmers unavailable',
+          title: l10n.nearbyUnavailable,
           subtitle: e.toString(),
           icon: Icons.people_outline,
         ),
         data: (farmers) => farmers.isEmpty
-            ? const EmptyStateWidget(
-                title: 'No farmers nearby',
-                subtitle: 'Update your location in profile to find farmers around you.',
+            ? EmptyStateWidget(
+                title: l10n.noFarmersNearby,
+                subtitle: l10n.updateLocationNearby,
                 icon: Icons.people_outline,
               )
             : ListView.separated(
@@ -62,18 +66,19 @@ class NearbyFarmersScreen extends ConsumerWidget {
                         [
                           if (f.location != null) f.location,
                           if (f.distanceKm != null)
-                            '${f.distanceKm!.toStringAsFixed(1)} km away',
+                            l10n.kmAway(f.distanceKm!.toStringAsFixed(1)),
                         ].join(' · '),
                       ),
                       trailing: f.mobile != null
                           ? IconButton(
                               icon: const Icon(Icons.phone_outlined),
-                              tooltip: 'Call ${f.mobile}',
-                              onPressed: () => _callFarmer(context, f.mobile!),
+                              tooltip: f.mobile,
+                              onPressed: () =>
+                                  _callFarmer(context, l10n, f.mobile!),
                             )
                           : null,
                       onTap: f.mobile != null
-                          ? () => _callFarmer(context, f.mobile!)
+                          ? () => _callFarmer(context, l10n, f.mobile!)
                           : null,
                     ),
                   );

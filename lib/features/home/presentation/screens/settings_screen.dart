@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:krishidnya/core/l10n/locale_config.dart';
 import 'package:krishidnya/core/config/providers.dart';
 import 'package:krishidnya/core/errors/exception_mapper.dart';
 import 'package:krishidnya/core/routes/app_routes.dart';
@@ -9,6 +10,7 @@ import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/core/utils/account_dialogs.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 
 /// App settings, legal pages, language, and account actions.
@@ -17,65 +19,75 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final locale = ref.watch(appLocaleProvider);
+    final currentLang = AppLanguages.find(locale.languageCode);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
         padding: AppSpacing.screenPadding,
         children: [
-          const _SectionHeader(title: 'Language'),
+          _SectionHeader(title: l10n.language),
           Card(
             child: ListTile(
               leading: const Icon(Icons.language),
-              title: const Text('App Language'),
-              subtitle: Text(locale.languageCode == 'hi' ? 'Hindi' : 'English'),
+              title: Text(l10n.appLanguage),
+              subtitle: Text(currentLang?.name ?? locale.languageCode),
               trailing: DropdownButton<String>(
                 value: locale.languageCode,
-                items: const [
-                  DropdownMenuItem(value: 'en', child: Text('English')),
-                  DropdownMenuItem(value: 'hi', child: Text('हिंदी')),
-                ],
+                items: AppLanguages.supported
+                    .map(
+                      (lang) => DropdownMenuItem(
+                        value: lang.code,
+                        child: Text(lang.name),
+                      ),
+                    )
+                    .toList(),
                 onChanged: (code) {
                   if (code != null) {
-                    ref.read(appLocaleProvider.notifier).setLocale(Locale(code));
+                    ref
+                        .read(appLocaleProvider.notifier)
+                        .setLocale(Locale(code));
                   }
                 },
               ),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          const _SectionHeader(title: 'Account'),
+          _SectionHeader(title: l10n.account),
           _SettingsTile(
             icon: Icons.logout,
-            title: 'Log Out',
-            onTap: () => _logout(context, ref),
+            title: l10n.logOut,
+            onTap: () => _logout(context, ref, l10n),
           ),
           _SettingsTile(
             icon: Icons.delete_outline,
-            title: 'Delete Account',
+            title: l10n.deleteAccount,
             color: AppColors.error,
             onTap: () => confirmDeleteAccount(context, ref),
           ),
           const SizedBox(height: AppSpacing.lg),
-          const _SectionHeader(title: 'Legal'),
+          _SectionHeader(title: l10n.legal),
           _SettingsTile(
             icon: Icons.description_outlined,
-            title: 'Terms & Conditions',
-            onTap: () => showLegalSheet(context, 'Terms & Conditions', kTermsText),
+            title: l10n.termsAndConditions,
+            onTap: () =>
+                showLegalSheet(context, l10n.termsAndConditions, kTermsText),
           ),
           _SettingsTile(
             icon: Icons.privacy_tip_outlined,
-            title: 'Privacy Policy',
-            onTap: () => showLegalSheet(context, 'Privacy Policy', kPrivacyText),
+            title: l10n.privacyPolicy,
+            onTap: () =>
+                showLegalSheet(context, l10n.privacyPolicy, kPrivacyText),
           ),
           const SizedBox(height: AppSpacing.lg),
-          const _SectionHeader(title: 'About'),
-          const Card(
+          _SectionHeader(title: l10n.about),
+          Card(
             child: ListTile(
-              leading: Icon(Icons.info_outline),
-              title: Text('Krishidnya v1.0.0'),
-              subtitle: Text('Your trusted digital farming companion'),
+              leading: const Icon(Icons.info_outline),
+              title: Text(l10n.appVersion),
+              subtitle: Text(l10n.appTagline),
             ),
           ),
         ],
@@ -83,15 +95,25 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _logout(BuildContext context, WidgetRef ref) async {
+  Future<void> _logout(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out?'),
+        title: Text(l10n.logOutConfirmTitle),
+        content: Text(l10n.logOutConfirmMessage),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Log Out')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.logOut),
+          ),
         ],
       ),
     );

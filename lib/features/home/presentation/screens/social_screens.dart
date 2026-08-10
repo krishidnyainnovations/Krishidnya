@@ -4,6 +4,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:krishidnya/core/errors/exception_mapper.dart';
+import 'package:krishidnya/core/l10n/locale_config.dart';
 import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
@@ -55,7 +56,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Future<void> _initSpeech() async {
     _speechReady = await _speech.initialize();
-    await _tts.setLanguage('en-IN');
+    await _applyVoiceLocale(ref.read(appLocaleProvider));
+  }
+
+  Future<void> _applyVoiceLocale(Locale locale) async {
+    final speechCode = AppLanguages.speechLocale(locale.languageCode);
+    await _tts.setLanguage(speechCode);
   }
 
   Future<void> _loadHistory() async {
@@ -167,6 +173,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(appLocaleProvider, (_, next) => _applyVoiceLocale(next));
+
     return Scaffold(
       appBar: AppBar(
         title: Column(

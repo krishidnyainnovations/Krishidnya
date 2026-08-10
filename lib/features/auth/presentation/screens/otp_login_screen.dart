@@ -6,6 +6,7 @@ import 'package:krishidnya/core/errors/exception_mapper.dart';
 import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 import 'package:krishidnya/widgets/inputs/app_text_field.dart';
@@ -32,8 +33,9 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen> {
   }
 
   Future<void> _sendOtp() async {
+    final l10n = AppLocalizations.of(context);
     if (_mobileCtrl.text.trim().length < 10) {
-      AppSnackBar.error(context, 'Enter a valid mobile number');
+      AppSnackBar.error(context, l10n.enterValidMobile);
       return;
     }
     setState(() => _loading = true);
@@ -45,15 +47,16 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen> {
     switch (result) {
       case Success():
         setState(() => _otpSent = true);
-        AppSnackBar.success(context, 'OTP sent to your mobile');
+        AppSnackBar.success(context, l10n.otpSent);
       case ErrorResult(:final failure):
         AppSnackBar.error(context, failure.message);
     }
   }
 
   Future<void> _verifyOtp() async {
+    final l10n = AppLocalizations.of(context);
     if (_otpCtrl.text.trim().isEmpty) {
-      AppSnackBar.error(context, 'Enter the OTP');
+      AppSnackBar.error(context, l10n.enterOtp);
       return;
     }
     setState(() => _loading = true);
@@ -74,18 +77,20 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Login with OTP')),
+      appBar: AppBar(title: Text(l10n.otpLoginTitle)),
       body: ListView(
         padding: AppSpacing.screenPadding,
         children: [
           Text(
-            'Enter your mobile number to receive a one-time password.',
+            l10n.otpLoginSubtitle,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: AppSpacing.lg),
           AppTextField(
-            label: 'Mobile Number',
+            label: l10n.mobileNumber,
             controller: _mobileCtrl,
             keyboardType: TextInputType.phone,
             enabled: !_otpSent,
@@ -93,21 +98,21 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen> {
           if (_otpSent) ...[
             const SizedBox(height: AppSpacing.md),
             AppTextField(
-              label: 'OTP',
+              label: l10n.otpLabel,
               controller: _otpCtrl,
               keyboardType: TextInputType.number,
             ),
           ],
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            label: _otpSent ? 'Verify & Login' : 'Send OTP',
+            label: _otpSent ? l10n.verifyAndLogin : l10n.sendOtp,
             isLoading: _loading,
             onPressed: _otpSent ? _verifyOtp : _sendOtp,
           ),
           const SizedBox(height: AppSpacing.md),
           TextButton(
             onPressed: () => context.push(AppRoutes.login),
-            child: const Text('Login with password instead'),
+            child: Text(l10n.loginWithPasswordInstead),
           ),
         ],
       ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:krishidnya/core/api/api_config.dart';
 import 'package:krishidnya/core/config/providers.dart';
+import 'package:krishidnya/core/l10n/locale_config.dart';
 import 'package:krishidnya/core/routes/app_router.dart';
 import 'package:krishidnya/core/services/app_logger.dart';
 import 'package:krishidnya/core/theme/app_theme.dart';
@@ -66,6 +68,7 @@ class _KrishidnyaAppState extends ConsumerState<KrishidnyaApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     final locale = ref.watch(appLocaleProvider);
+    final isRtl = AppLanguages.isRtl(locale);
 
     return MaterialApp.router(
       title: 'Krishidnya',
@@ -75,6 +78,12 @@ class _KrishidnyaAppState extends ConsumerState<KrishidnyaApp> {
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      builder: (context, child) {
+        return Directionality(
+          textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       routerConfig: router,
     );
   }

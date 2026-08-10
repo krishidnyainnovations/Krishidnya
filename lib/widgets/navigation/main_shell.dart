@@ -6,6 +6,7 @@ import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/features/home/presentation/screens/home_screen.dart';
 import 'package:krishidnya/features/home/presentation/screens/social_screens.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 
 /// Main shell: Home · Chat · Scan · Community · Profile
 class MainShell extends StatefulWidget {
@@ -30,6 +31,8 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       body: AnimatedSwitcher(
         duration: AppConstants.animationNormal,
@@ -46,19 +49,41 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: _BottomNavBar(
         selectedIndex: _selectedIndex,
         onSelected: (i) => setState(() => _selectedIndex = i),
+        labels: _NavLabels(
+          home: l10n.home,
+          chat: l10n.chat,
+          community: l10n.community,
+          profile: l10n.profile,
+        ),
       ),
     );
   }
+}
+
+class _NavLabels {
+  const _NavLabels({
+    required this.home,
+    required this.chat,
+    required this.community,
+    required this.profile,
+  });
+
+  final String home;
+  final String chat;
+  final String community;
+  final String profile;
 }
 
 class _BottomNavBar extends StatelessWidget {
   const _BottomNavBar({
     required this.selectedIndex,
     required this.onSelected,
+    required this.labels,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onSelected;
+  final _NavLabels labels;
 
   @override
   Widget build(BuildContext context) {
@@ -81,13 +106,13 @@ class _BottomNavBar extends StatelessWidget {
             children: [
               _NavItem(
                 icon: Icons.home_rounded,
-                label: 'Home',
+                label: labels.home,
                 selected: selectedIndex == 0,
                 onTap: () => onSelected(0),
               ),
               _NavItem(
                 icon: Icons.chat_bubble_outline_rounded,
-                label: 'Chat',
+                label: labels.chat,
                 selected: selectedIndex == 1,
                 onTap: () => onSelected(1),
               ),
@@ -97,13 +122,13 @@ class _BottomNavBar extends StatelessWidget {
               ),
               _NavItem(
                 icon: Icons.people_outline_rounded,
-                label: 'Community',
+                label: labels.community,
                 selected: selectedIndex == 3,
                 onTap: () => onSelected(3),
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,
-                label: 'Profile',
+                label: labels.profile,
                 selected: selectedIndex == 4,
                 onTap: () => onSelected(4),
               ),

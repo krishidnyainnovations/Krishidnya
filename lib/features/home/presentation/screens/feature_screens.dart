@@ -15,6 +15,7 @@ import 'package:krishidnya/features/home/data/local_farm_storage.dart';
 import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
 import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 import 'package:krishidnya/widgets/feedback/empty_state_widget.dart';
@@ -126,45 +127,47 @@ class _CropRecommendationScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Crop Recommendation')),
+      appBar: AppBar(title: Text(l10n.cropRecommendation)),
       body: ListView(
         padding: AppSpacing.screenPadding,
         children: [
           Text(
-            'Tell us about your farm',
+            l10n.tellUsAboutFarm,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: AppSpacing.lg),
           _DropdownField(
-            label: 'Soil Type',
+            label: l10n.soilType,
             value: _soilType,
             items: _soils,
             onChanged: (v) => setState(() => _soilType = v!),
           ),
           const SizedBox(height: AppSpacing.md),
           _DropdownField(
-            label: 'Season',
+            label: l10n.season,
             value: _season,
             items: _seasons,
             onChanged: (v) => setState(() => _season = v!),
           ),
           const SizedBox(height: AppSpacing.md),
           AppTextField(
-            label: 'Farm Area (acres)',
+            label: l10n.farmAreaAcres,
             controller: _areaController,
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: AppSpacing.md),
           _DropdownField(
-            label: 'Watering Method',
+            label: l10n.wateringMethod,
             value: _watering,
             items: _wateringTypes,
             onChanged: (v) => setState(() => _watering = v!),
           ),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            label: 'Get Top 4 Crops',
+            label: l10n.getTop4Crops,
             isLoading: _loading,
             icon: Icons.psychology_outlined,
             onPressed: _getRecommendations,
@@ -173,7 +176,7 @@ class _CropRecommendationScreenState
             const SizedBox(height: AppSpacing.xl),
             _WeatherAnalysisCard(analysis: _results!.weatherAnalysis),
             const SizedBox(height: AppSpacing.lg),
-            Text('Top Crop Picks', style: Theme.of(context).textTheme.titleLarge),
+            Text(l10n.topCropPicks, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: AppSpacing.sm),
             ..._results!.crops.map((c) => _CropExpandableCard(crop: c)),
           ],
@@ -189,6 +192,8 @@ class _WeatherAnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Card(
       color: AppColors.primaryContainer.withValues(alpha: 0.3),
       child: Padding(
@@ -196,11 +201,12 @@ class _WeatherAnalysisCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Weather Analysis', style: Theme.of(context).textTheme.titleMedium),
+            Text(l10n.weatherAnalysis,
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: AppSpacing.sm),
-            _Row('Temperature', analysis.temperature),
-            _Row('Humidity', analysis.humidity),
-            _Row('Expected Rain', analysis.expectedRain),
+            _Row(l10n.temperature, analysis.temperature),
+            _Row(l10n.humidity, analysis.humidity),
+            _Row(l10n.expectedRain, analysis.expectedRain),
           ],
         ),
       ),
@@ -233,6 +239,8 @@ class _CropExpandableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: ExpansionTile(
@@ -245,7 +253,7 @@ class _CropExpandableCard extends StatelessWidget {
         ),
         title: Text(crop.name),
         subtitle: Text(
-          'Harvest: ${crop.daysToHarvest ?? '—'} · Profit: ${crop.expectedProfit ?? '—'}',
+          '${l10n.harvestShort}: ${crop.daysToHarvest ?? '—'} · ${l10n.profit}: ${crop.expectedProfit ?? '—'}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         children: [
@@ -254,11 +262,11 @@ class _CropExpandableCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _DetailRow('Why grow', crop.why),
-                _DetailRow('Water required', crop.waterRequired),
-                _DetailRow('Days to harvest', crop.daysToHarvest),
-                _DetailRow('Growing period', crop.growingPeriod),
-                _DetailRow('Expected profit', crop.expectedProfit),
+                _DetailRow(l10n.whyGrow, crop.why),
+                _DetailRow(l10n.waterRequired, crop.waterRequired),
+                _DetailRow(l10n.daysToHarvest, crop.daysToHarvest),
+                _DetailRow(l10n.growingPeriod, crop.growingPeriod),
+                _DetailRow(l10n.expectedProfit, crop.expectedProfit),
               ],
             ),
           ),
@@ -376,8 +384,10 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan Crop')),
+      appBar: AppBar(title: Text(l10n.scanCrop)),
       body: ListView(
         padding: AppSpacing.screenPadding,
         children: [
@@ -392,21 +402,19 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
               ),
             )
           else
-            const EmptyStateWidget(
-              title: 'Scan your crop',
-              subtitle:
-                  'Take a photo of affected leaves. Our AI detects diseases and '
-                  'suggests organic & chemical cures with exact dosages.',
+            EmptyStateWidget(
+              title: l10n.scanYourCrop,
+              subtitle: l10n.scanCropHelpText,
               icon: Icons.camera_alt_outlined,
             ),
           if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(AppSpacing.lg),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 children: [
-                  CircularProgressIndicator(color: AppColors.primary),
-                  SizedBox(height: AppSpacing.sm),
-                  Text('Analyzing crop image...'),
+                  const CircularProgressIndicator(color: AppColors.primary),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(l10n.analyzingCropImage),
                 ],
               ),
             ),
@@ -422,12 +430,14 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
               onPressed: () => _showSourcePicker(context),
               backgroundColor: AppColors.primary,
               icon: const Icon(Icons.camera_alt_rounded),
-              label: const Text('Take Photo'),
+              label: Text(l10n.takePhoto),
             ),
     );
   }
 
   void _showSourcePicker(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     showModalBottomSheet<void>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -436,7 +446,7 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Camera'),
+              title: Text(l10n.camera),
               onTap: () {
                 Navigator.pop(ctx);
                 _pickAndScan(ImageSource.camera);
@@ -444,7 +454,7 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Gallery'),
+              title: Text(l10n.gallery),
               onTap: () {
                 Navigator.pop(ctx);
                 _pickAndScan(ImageSource.gallery);
@@ -463,6 +473,8 @@ class _ScanResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -471,15 +483,17 @@ class _ScanResultCard extends StatelessWidget {
           child: ListTile(
             leading: const Icon(Icons.warning_amber_rounded, color: AppColors.error),
             title: Text(result.disease, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: result.confidence != null ? Text('Confidence: ${result.confidence}') : null,
+            subtitle: result.confidence != null
+                ? Text(l10n.confidenceLabel(result.confidence!))
+                : null,
           ),
         ),
         if (result.organicCure != null) ...[
           const SizedBox(height: AppSpacing.md),
           _CureCard(
-            title: 'Organic Cure (Recommended)',
+            title: l10n.organicCureRecommended,
             content: result.dosage != null
-                ? '${result.organicCure}\n\nDosage: ${result.dosage}'
+                ? '${result.organicCure}\n\n${l10n.dosageLabel}: ${result.dosage}'
                 : result.organicCure!,
             color: AppColors.primary,
             icon: Icons.eco,
@@ -488,7 +502,7 @@ class _ScanResultCard extends StatelessWidget {
         if (result.chemicalCure != null) ...[
           const SizedBox(height: AppSpacing.sm),
           _CureCard(
-            title: 'Chemical Cure',
+            title: l10n.chemicalCure,
             content: result.chemicalCure!,
             color: AppColors.accent,
             icon: Icons.science_outlined,
@@ -497,7 +511,7 @@ class _ScanResultCard extends StatelessWidget {
         if (result.products != null) ...[
           const SizedBox(height: AppSpacing.sm),
           _CureCard(
-            title: 'Recommended Products',
+            title: l10n.recommendedProducts,
             content: result.products!,
             color: AppColors.secondary,
             icon: Icons.shopping_bag_outlined,
@@ -613,17 +627,19 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Mandi Prices')),
+      appBar: AppBar(title: Text(l10n.mandiPrices)),
       body: ListView(
         padding: AppSpacing.screenPadding,
         children: [
-          AppTextField(label: 'Crop', controller: _commodityController),
+          AppTextField(label: l10n.crop, controller: _commodityController),
           const SizedBox(height: AppSpacing.md),
-          AppTextField(label: 'State', controller: _stateController),
+          AppTextField(label: l10n.stateLabel, controller: _stateController),
           if (_favorites.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
-            Text('Favorites', style: Theme.of(context).textTheme.labelMedium),
+            Text(l10n.favorites, style: Theme.of(context).textTheme.labelMedium),
             const SizedBox(height: AppSpacing.xs),
             Wrap(
               spacing: AppSpacing.xs,
@@ -640,7 +656,7 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
           ],
           if (_recent.where((r) => !_favorites.contains(r)).isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
-            Text('Recent', style: Theme.of(context).textTheme.labelMedium),
+            Text(l10n.recent, style: Theme.of(context).textTheme.labelMedium),
             const SizedBox(height: AppSpacing.xs),
             Wrap(
               spacing: AppSpacing.xs,
@@ -658,7 +674,7 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
           ],
           const SizedBox(height: AppSpacing.lg),
           PrimaryButton(
-            label: "Fetch Today's Prices",
+            label: l10n.fetchTodaysPrices,
             isLoading: _loading,
             onPressed: _fetch,
           ),
@@ -668,9 +684,11 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
               final mandiPrefs = await ref.read(mandiPreferencesProvider.future);
               await mandiPrefs.addFavorite(_commodityController.text.trim());
               setState(() => _favorites = mandiPrefs.getFavorites());
-              AppSnackBar.success(context, 'Added to favorites');
+              if (context.mounted) {
+                AppSnackBar.success(context, l10n.addedToFavorites);
+              }
             },
-            child: const Text('Save crop to favorites'),
+            child: Text(l10n.saveCropToFavorites),
           ),
           const SizedBox(height: AppSpacing.lg),
           if (_prices != null) _MandiPricesList(data: _prices!),
@@ -686,6 +704,9 @@ class _MandiPricesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final records = parseMandiRecords(data);
+
     if (data.containsKey('error')) {
       return Card(
         child: Padding(
@@ -695,12 +716,11 @@ class _MandiPricesList extends StatelessWidget {
       );
     }
 
-    final records = parseMandiRecords(data);
     if (records.isEmpty) {
-      return const Card(
+      return Card(
         child: Padding(
           padding: AppSpacing.cardPadding,
-          child: Text('No price data found for this crop and state.'),
+          child: Text(l10n.noPriceData),
         ),
       );
     }
@@ -708,12 +728,13 @@ class _MandiPricesList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Today's Market Rates", style: Theme.of(context).textTheme.titleMedium),
+        Text(l10n.todaysMarketRates,
+            style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: AppSpacing.sm),
         ...records.take(20).map((r) => Card(
               margin: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: ListTile(
-                title: Text('${r['market'] ?? r['district'] ?? 'Market'}'),
+                title: Text('${r['market'] ?? r['district'] ?? l10n.marketLabel}'),
                 subtitle: Text(
                   '${r['commodity'] ?? ''} · ${r['variety'] ?? ''}',
                 ),

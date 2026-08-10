@@ -7,6 +7,7 @@ import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 import 'package:krishidnya/widgets/inputs/app_text_field.dart';
@@ -19,15 +20,16 @@ class SchemeDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final schemeAsync = ref.watch(schemeDetailProvider(schemeId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Scheme Details')),
+      appBar: AppBar(title: Text(l10n.schemeDetails)),
       body: schemeAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
-        error: (e, _) => Center(child: Text('Could not load scheme: $e')),
+        error: (e, _) => Center(child: Text(l10n.couldNotLoadScheme('$e'))),
         data: (scheme) => _SchemeDetailBody(scheme: scheme),
       ),
     );
@@ -40,6 +42,7 @@ class _SchemeDetailBody extends ConsumerWidget {
   final Scheme scheme;
 
   Future<void> _showApplySheet(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
     final nameController = TextEditingController(
       text: ref.read(currentUserProvider).valueOrNull?.fullName ?? '',
     );
@@ -64,21 +67,26 @@ class _SchemeDetailBody extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Apply for ${scheme.title}',
-                  style: Theme.of(ctx).textTheme.titleLarge),
+              Text(
+                l10n.applyForTitle(scheme.title),
+                style: Theme.of(ctx).textTheme.titleLarge,
+              ),
               const SizedBox(height: AppSpacing.lg),
-              AppTextField(label: 'Full Name', controller: nameController),
+              AppTextField(label: l10n.fullName, controller: nameController),
               const SizedBox(height: AppSpacing.md),
               AppTextField(
-                label: 'Mobile Number',
+                label: l10n.mobileNumber,
                 controller: mobileController,
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: AppSpacing.md),
-              AppTextField(label: 'Village Name', controller: villageController),
+              AppTextField(
+                label: l10n.villageName,
+                controller: villageController,
+              ),
               const SizedBox(height: AppSpacing.lg),
               PrimaryButton(
-                label: 'Submit Application',
+                label: l10n.submitApplication,
                 isLoading: isLoading,
                 onPressed: isLoading
                     ? null
@@ -86,7 +94,7 @@ class _SchemeDetailBody extends ConsumerWidget {
                         if (nameController.text.isEmpty ||
                             mobileController.text.isEmpty ||
                             villageController.text.isEmpty) {
-                          AppSnackBar.error(ctx, 'Please fill all fields');
+                          AppSnackBar.error(ctx, l10n.fillAllFields);
                           return;
                         }
                         setState(() => isLoading = true);
@@ -109,7 +117,7 @@ class _SchemeDetailBody extends ConsumerWidget {
                             Navigator.pop(ctx);
                             AppSnackBar.success(
                               context,
-                              'Application submitted! Our team will contact you.',
+                              l10n.applicationSubmitted,
                             );
                           case ErrorResult(:final failure):
                             AppSnackBar.error(context, failure.message);
@@ -129,6 +137,8 @@ class _SchemeDetailBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+
     return ListView(
       padding: AppSpacing.screenPadding,
       children: [
@@ -167,25 +177,27 @@ class _SchemeDetailBody extends ConsumerWidget {
         Text(scheme.description),
         if (scheme.eligibilityCriteria != null) ...[
           const SizedBox(height: AppSpacing.lg),
-          Text('Eligibility', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.eligibility,
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.sm),
           Text(scheme.eligibilityCriteria!),
         ],
         if (scheme.benefits != null) ...[
           const SizedBox(height: AppSpacing.lg),
-          Text('Benefits', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.benefits, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.sm),
           Text(scheme.benefits!),
         ],
         if (scheme.howToApply != null) ...[
           const SizedBox(height: AppSpacing.lg),
-          Text('How to Apply', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.howToApply,
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.sm),
           Text(scheme.howToApply!),
         ],
         const SizedBox(height: AppSpacing.xl),
         PrimaryButton(
-          label: 'Apply Now',
+          label: l10n.applyNow,
           onPressed: () => _showApplySheet(context, ref),
         ),
       ],

@@ -8,6 +8,7 @@ import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
 import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
 import 'package:krishidnya/widgets/inputs/app_text_field.dart';
@@ -36,11 +37,12 @@ class _SchemesScreenState extends ConsumerState<SchemesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final schemesAsync = ref.watch(schemesProvider);
     final typeFilter = ref.watch(schemesTypeFilterProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Government Schemes')),
+      appBar: AppBar(title: Text(l10n.governmentSchemes)),
       body: Column(
         children: [
           Padding(
@@ -49,7 +51,7 @@ class _SchemesScreenState extends ConsumerState<SchemesScreen> {
               children: [
                 Expanded(
                   child: AppTextField(
-                    label: 'Search schemes',
+                    label: l10n.searchSchemes,
                     controller: _searchController,
                     textInputAction: TextInputAction.search,
                   ),
@@ -73,10 +75,11 @@ class _SchemesScreenState extends ConsumerState<SchemesScreen> {
                 child: Row(
                   children: [
                     FilterChip(
-                      label: const Text('All'),
+                      label: Text(l10n.all),
                       selected: typeFilter == null,
                       onSelected: (_) =>
-                          ref.read(schemesTypeFilterProvider.notifier).state = null,
+                          ref.read(schemesTypeFilterProvider.notifier).state =
+                              null,
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     ...types.map(
@@ -103,9 +106,10 @@ class _SchemesScreenState extends ConsumerState<SchemesScreen> {
               loading: () => const Center(
                 child: CircularProgressIndicator(color: AppColors.primary),
               ),
-              error: (e, _) => Center(child: Text('Could not load schemes: $e')),
+              error: (e, _) =>
+                  Center(child: Text(l10n.couldNotLoadSchemes('$e'))),
               data: (schemes) => schemes.isEmpty
-                  ? const Center(child: Text('No schemes match your search'))
+                  ? Center(child: Text(l10n.noSchemesMatch))
                   : RefreshIndicator(
                       onRefresh: () async => ref.invalidate(schemesProvider),
                       child: ListView.separated(
@@ -131,6 +135,7 @@ class _SchemeCard extends ConsumerWidget {
   final Scheme scheme;
 
   Future<void> _showApplySheet(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
     final nameController = TextEditingController(
       text: ref.read(currentUserProvider).valueOrNull?.fullName ?? '',
     );
@@ -156,33 +161,33 @@ class _SchemeCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Apply for ${scheme.title}',
+                l10n.applyForTitle(scheme.title),
                 style: Theme.of(ctx).textTheme.titleLarge,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Our team will fill the form for you',
+                l10n.teamFillForm,
                 style: Theme.of(ctx).textTheme.bodySmall,
               ),
               const SizedBox(height: AppSpacing.lg),
               AppTextField(
-                label: 'Full Name',
+                label: l10n.fullName,
                 controller: nameController,
               ),
               const SizedBox(height: AppSpacing.md),
               AppTextField(
-                label: 'Mobile Number',
+                label: l10n.mobileNumber,
                 controller: mobileController,
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: AppSpacing.md),
               AppTextField(
-                label: 'Village Name',
+                label: l10n.villageName,
                 controller: villageController,
               ),
               const SizedBox(height: AppSpacing.lg),
               PrimaryButton(
-                label: 'Submit Application',
+                label: l10n.submitApplication,
                 isLoading: isLoading,
                 onPressed: isLoading
                     ? null
@@ -190,7 +195,7 @@ class _SchemeCard extends ConsumerWidget {
                         if (nameController.text.isEmpty ||
                             mobileController.text.isEmpty ||
                             villageController.text.isEmpty) {
-                          AppSnackBar.error(ctx, 'Please fill all fields');
+                          AppSnackBar.error(ctx, l10n.fillAllFields);
                           return;
                         }
                         setState(() => isLoading = true);
@@ -213,7 +218,7 @@ class _SchemeCard extends ConsumerWidget {
                             Navigator.pop(ctx);
                             AppSnackBar.success(
                               context,
-                              'Application submitted! Our team will contact you.',
+                              l10n.applicationSubmitted,
                             );
                           case ErrorResult(:final failure):
                             AppSnackBar.error(context, failure.message);
@@ -233,6 +238,8 @@ class _SchemeCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -291,13 +298,13 @@ class _SchemeCard extends ConsumerWidget {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => context.push('/schemes/${scheme.id}'),
-                        child: const Text('Details'),
+                        child: Text(l10n.details),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: PrimaryButton(
-                        label: 'Apply',
+                        label: l10n.apply,
                         onPressed: () => _showApplySheet(context, ref),
                       ),
                     ),

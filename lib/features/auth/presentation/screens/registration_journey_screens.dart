@@ -6,6 +6,7 @@ import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_colors.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/buttons/outlined_button.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/common/app_logo.dart';
@@ -16,6 +17,7 @@ class LocationPermissionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -35,13 +37,13 @@ class LocationPermissionScreen extends ConsumerWidget {
                   ),
               const SizedBox(height: AppSpacing.xxl),
               Text(
-                'Help us understand your farm',
+                l10n.locationPermissionTitle,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineMedium,
               ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Your location helps us provide accurate weather, crop advice, and local insights tailored to your region.',
+                l10n.locationPermissionSubtitleExtended,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: AppColors.textSecondary,
@@ -49,7 +51,7 @@ class LocationPermissionScreen extends ConsumerWidget {
               ).animate().fadeIn(delay: 350.ms),
               const Spacer(flex: 2),
               PrimaryButton(
-                label: 'Allow Location',
+                label: l10n.locationPermissionAllow,
                 icon: Icons.my_location_rounded,
                 onPressed: () {
                   ref
@@ -60,7 +62,7 @@ class LocationPermissionScreen extends ConsumerWidget {
               ).animate().fadeIn(delay: 500.ms),
               const SizedBox(height: AppSpacing.sm),
               OutlinedAppButton(
-                label: 'Skip for now',
+                label: l10n.locationPermissionSkip,
                 onPressed: () {
                   ref
                       .read(registrationControllerProvider.notifier)
@@ -82,6 +84,7 @@ class LocationLoadingScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final state = ref.watch(registrationControllerProvider);
 
@@ -121,7 +124,7 @@ class LocationLoadingScreen extends ConsumerWidget {
                     ),
                 const SizedBox(height: AppSpacing.xxl),
                 Text(
-                  'Looking at your surroundings...',
+                  l10n.locationLoading,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge,
                 ).animate().fadeIn(),
@@ -154,6 +157,7 @@ class LocationFoundScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final location = ref.watch(registrationControllerProvider).location;
 
@@ -181,12 +185,12 @@ class LocationFoundScreen extends ConsumerWidget {
                   .scale(begin: const Offset(0.5, 0.5), curve: Curves.elasticOut),
               const SizedBox(height: AppSpacing.xxl),
               Text(
-                'We found your location',
+                l10n.locationFound,
                 style: theme.textTheme.headlineMedium,
               ).animate().fadeIn(delay: 300.ms),
               const SizedBox(height: AppSpacing.md),
               Text(
-                location?.displayLocation ?? 'Location detected',
+                location?.displayLocation ?? l10n.locationDetected,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: AppColors.primary,
@@ -194,7 +198,7 @@ class LocationFoundScreen extends ConsumerWidget {
               ).animate().fadeIn(delay: 450.ms),
               const Spacer(flex: 2),
               PrimaryButton(
-                label: 'Continue',
+                label: l10n.continueLabel,
                 onPressed: () {
                   ref
                       .read(registrationControllerProvider.notifier)
@@ -216,6 +220,7 @@ class AlmostReadyScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final state = ref.watch(registrationControllerProvider);
 
@@ -224,7 +229,8 @@ class AlmostReadyScreen extends ConsumerWidget {
         refreshAuthSession(ref).then((_) {
           if (context.mounted) context.go(AppRoutes.registerSuccess);
         });
-      } else if (next.error != null && prev?.step != RegistrationStep.createAccount) {
+      } else if (next.error != null &&
+          prev?.step != RegistrationStep.createAccount) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(next.error!.message)),
         );
@@ -243,12 +249,12 @@ class AlmostReadyScreen extends ConsumerWidget {
                 const KrishidnyaLogo(size: 100),
                 const SizedBox(height: AppSpacing.xxl),
                 Text(
-                  'Almost ready',
+                  l10n.almostReady,
                   style: theme.textTheme.headlineMedium,
                 ).animate().fadeIn(delay: 400.ms),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  "We're setting up your personalized farming dashboard",
+                  l10n.almostReadySubtitle,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyLarge,
                 ).animate().fadeIn(delay: 550.ms),
@@ -270,6 +276,7 @@ class RegisterSuccessScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -289,19 +296,19 @@ class RegisterSuccessScreen extends ConsumerWidget {
                   .scale(begin: const Offset(0.7, 0.7), curve: Curves.elasticOut),
               const SizedBox(height: AppSpacing.xxl),
               Text(
-                'Your farm is now connected',
+                l10n.accountCreated,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineMedium,
               ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1, end: 0),
               const SizedBox(height: AppSpacing.md),
               Text(
-                "Welcome to Krishidnya. Let's begin your journey.",
+                l10n.accountCreatedSubtitle,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyLarge,
               ).animate().fadeIn(delay: 550.ms),
               const Spacer(flex: 2),
               PrimaryButton(
-                label: 'Enter Dashboard',
+                label: l10n.enterDashboard,
                 icon: Icons.arrow_forward_rounded,
                 onPressed: () async {
                   await refreshAuthSession(ref);

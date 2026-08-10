@@ -7,6 +7,7 @@ import 'package:krishidnya/core/debug/log_monitor_screen.dart';
 import 'package:krishidnya/core/routes/app_routes.dart';
 import 'package:krishidnya/core/theme/app_spacing.dart';
 import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:krishidnya/l10n/app_localizations.dart';
 import 'package:krishidnya/widgets/buttons/primary_button.dart';
 import 'package:krishidnya/widgets/common/app_logo.dart';
 import 'package:krishidnya/widgets/inputs/app_text_field.dart';
@@ -56,6 +57,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final loginState = ref.watch(loginControllerProvider);
 
@@ -81,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  'Welcome back',
+                  l10n.welcomeBack,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineMedium,
                 )
@@ -90,15 +92,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     .slideY(begin: 0.1, end: 0),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Sign in to continue your farming journey',
+                  l10n.loginSubtitle,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium,
                 ).animate().fadeIn(delay: 300.ms),
                 const SizedBox(height: AppSpacing.xxl),
                 AppTextField(
-                  label: 'Mobile Number',
+                  label: l10n.mobileNumber,
                   controller: _mobileController,
-                  hint: 'Enter your mobile number',
+                  hint: l10n.mobileHintLogin,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                   prefixIcon: const Icon(Icons.phone_outlined),
@@ -109,16 +111,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   autofillHints: const [AutofillHints.telephoneNumber],
                   validator: (value) {
                     if (value == null || value.length < 10) {
-                      return 'Please enter a valid 10-digit mobile number';
+                      return l10n.validMobileLogin;
                     }
                     return null;
                   },
                 ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.05, end: 0),
                 const SizedBox(height: AppSpacing.md),
                 AppTextField(
-                  label: 'Password',
+                  label: l10n.password,
                   controller: _passwordController,
-                  hint: 'Enter your password',
+                  hint: l10n.passwordHint,
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
@@ -134,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   autofillHints: const [AutofillHints.password],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
+                      return l10n.enterPassword;
                     }
                     return null;
                   },
@@ -142,7 +144,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ).animate().fadeIn(delay: 500.ms).slideX(begin: -0.05, end: 0),
                 const SizedBox(height: AppSpacing.xl),
                 PrimaryButton(
-                  label: 'Login',
+                  label: l10n.login,
                   isLoading: loginState.isLoading,
                   onPressed: _handleLogin,
                 ).animate().fadeIn(delay: 600.ms),
@@ -151,12 +153,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Don't have an account?",
+                      l10n.dontHaveAccount,
                       style: theme.textTheme.bodyMedium,
                     ),
                     TextButton(
                       onPressed: () => context.go(AppRoutes.register),
-                      child: const Text('Create Account'),
+                      child: Text(l10n.register),
                     ),
                   ],
                 ).animate().fadeIn(delay: 700.ms),
@@ -164,7 +166,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Center(
                   child: TextButton(
                     onPressed: () => context.push(AppRoutes.otpLogin),
-                    child: const Text('Login with OTP instead'),
+                    child: Text(l10n.loginWithOtpInstead),
                   ),
                 ).animate().fadeIn(delay: 800.ms),
               ],
