@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:krishidnya/core/storage/preferences_service.dart';
+import 'package:cropdoc/core/storage/preferences_service.dart';
 
 /// A single expense entry in the farm logbook.
 class FarmExpense {

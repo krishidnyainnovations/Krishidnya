@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:krishidnya/core/errors/failures.dart';
+import 'package:cropdoc/core/errors/failures.dart';
 
 /// Maps exceptions and Dio errors to domain [Failure] types.
 abstract final class ExceptionMapper {

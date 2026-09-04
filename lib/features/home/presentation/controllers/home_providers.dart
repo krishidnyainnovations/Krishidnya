@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:krishidnya/core/config/providers.dart';
-import 'package:krishidnya/core/errors/exception_mapper.dart';
-import 'package:krishidnya/core/services/local_preferences_service.dart';
-import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:krishidnya/features/home/data/home_repository.dart';
-import 'package:krishidnya/features/home/data/local_farm_storage.dart';
-import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
-import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
+import 'package:cropdoc/core/config/providers.dart';
+import 'package:cropdoc/core/errors/exception_mapper.dart';
+import 'package:cropdoc/core/services/local_preferences_service.dart';
+import 'package:cropdoc/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:cropdoc/features/home/data/home_repository.dart';
+import 'package:cropdoc/features/home/data/local_farm_storage.dart';
+import 'package:cropdoc/features/home/domain/entities/feature_models.dart';
+import 'package:cropdoc/features/home/domain/entities/home_entities.dart';
 
 final homeRemoteDataSourceProvider = Provider<HomeRemoteDataSource>((ref) {
   return HomeRemoteDataSource(
@@ -25,7 +25,9 @@ final localFarmStorageProvider = FutureProvider<LocalFarmStorage>((ref) async {
   return LocalFarmStorage(prefs);
 });
 
-final chatHistoryServiceProvider = FutureProvider<ChatHistoryService>((ref) async {
+final chatHistoryServiceProvider = FutureProvider<ChatHistoryService>((
+  ref,
+) async {
   final prefs = await ref.watch(preferencesProvider.future);
   return ChatHistoryService(prefs);
 });
@@ -35,18 +37,23 @@ final mandiPreferencesProvider = FutureProvider<MandiPreferences>((ref) async {
   return MandiPreferences(prefs);
 });
 
-final notificationPreferencesProvider =
-    FutureProvider<NotificationPreferences>((ref) async {
-  final prefs = await ref.watch(preferencesProvider.future);
-  return NotificationPreferences(prefs);
-});
+final notificationPreferencesProvider = FutureProvider<NotificationPreferences>(
+  (ref) async {
+    final prefs = await ref.watch(preferencesProvider.future);
+    return NotificationPreferences(prefs);
+  },
+);
 
-final localePreferencesProvider = FutureProvider<LocalePreferences>((ref) async {
+final localePreferencesProvider = FutureProvider<LocalePreferences>((
+  ref,
+) async {
   final prefs = await ref.watch(preferencesProvider.future);
   return LocalePreferences(prefs);
 });
 
-final appLocaleProvider = StateNotifierProvider<AppLocaleNotifier, Locale>((ref) {
+final appLocaleProvider = StateNotifierProvider<AppLocaleNotifier, Locale>((
+  ref,
+) {
   return AppLocaleNotifier(ref);
 });
 
@@ -58,15 +65,38 @@ class AppLocaleNotifier extends StateNotifier<Locale> {
   final Ref _ref;
 
   Future<void> _load() async {
-    final prefs = await _ref.read(localePreferencesProvider.future);
-    final code = prefs.getLocaleCode();
-    if (code != null) state = Locale(code);
+    try {
+      final prefs = await _ref.read(localePreferencesProvider.future);
+      final code = prefs.getLocaleCode();
+      if (code != null) state = Locale(code);
+    } catch (e) {
+      // Silently fall back to English if preferences fail
+      _ref
+          .read(appLoggerProvider)
+          .warning(
+            'Locale',
+            'Failed to load locale preference, using default',
+            details: e.toString(),
+          );
+      state = const Locale('en');
+    }
   }
 
   Future<void> setLocale(Locale locale) async {
     state = locale;
-    final prefs = await _ref.read(localePreferencesProvider.future);
-    await prefs.setLocaleCode(locale.languageCode);
+    try {
+      final prefs = await _ref.read(localePreferencesProvider.future);
+      await prefs.setLocaleCode(locale.languageCode);
+    } catch (e, st) {
+      _ref
+          .read(appLoggerProvider)
+          .error(
+            'Locale',
+            'Failed to save locale preference',
+            error: e,
+            stackTrace: st,
+          );
+    }
   }
 }
 
@@ -91,18 +121,19 @@ final schemesTypeFilterProvider = StateProvider<String?>((ref) => null);
 final schemesProvider = FutureProvider<List<Scheme>>((ref) async {
   final search = ref.watch(schemesSearchProvider);
   final type = ref.watch(schemesTypeFilterProvider);
-  final result = await ref.watch(homeRepositoryProvider).getSchemes(
-        search: search.isEmpty ? null : search,
-        type: type,
-      );
+  final result = await ref
+      .watch(homeRepositoryProvider)
+      .getSchemes(search: search.isEmpty ? null : search, type: type);
   return switch (result) {
     Success(:final data) => data,
     ErrorResult(:final failure) => throw failure,
   };
 });
 
-final schemeDetailProvider =
-    FutureProvider.family<Scheme, int>((ref, id) async {
+final schemeDetailProvider = FutureProvider.family<Scheme, int>((
+  ref,
+  id,
+) async {
   final result = await ref.watch(homeRepositoryProvider).getScheme(id);
   return switch (result) {
     Success(:final data) => data,
@@ -113,12 +144,20 @@ final schemeDetailProvider =
 final homeWeatherProvider = FutureProvider<WeatherSummary>((ref) async {
   final user = await ref.watch(currentUserProvider.future);
   if (user?.latitude == null || user?.longitude == null) {
-    throw Exception(
-      'Location not set. Update your profile location for weather data.',
+    // Return a default weather summary instead of throwing
+    return const WeatherSummary(
+      temperature: '--°C',
+      condition: 'Location not set',
+      humidity: null,
+      windSpeed: null,
+      location: 'Your Farm',
+      icon: 'question',
     );
   }
 
-  final result = await ref.watch(homeRepositoryProvider).getWeather(
+  final result = await ref
+      .watch(homeRepositoryProvider)
+      .getWeather(
         latitude: user!.latitude!,
         longitude: user.longitude!,
         locationLabel: user.location ?? user.city ?? 'Your Farm',
@@ -126,22 +165,32 @@ final homeWeatherProvider = FutureProvider<WeatherSummary>((ref) async {
 
   return switch (result) {
     Success(:final data) => data,
-    ErrorResult(:final failure) => throw failure,
+    ErrorResult() => const WeatherSummary(
+      temperature: '--°C',
+      condition: 'Weather unavailable',
+      humidity: null,
+      windSpeed: null,
+      location: 'Your Farm',
+      icon: 'question',
+    ),
   };
 });
 
 final productsProvider = FutureProvider<List<Product>>((ref) async {
   final user = await ref.watch(currentUserProvider.future);
-  final result = await ref.watch(homeRepositoryProvider).getProducts(
-        state: user?.state,
-      );
+  final result = await ref
+      .watch(homeRepositoryProvider)
+      .getProducts(state: user?.state);
   return switch (result) {
     Success(:final data) => data,
     ErrorResult(:final failure) => throw failure,
   };
 });
 
-final productDetailProvider = FutureProvider.family<Product, int>((ref, id) async {
+final productDetailProvider = FutureProvider.family<Product, int>((
+  ref,
+  id,
+) async {
   final products = await ref.watch(productsProvider.future);
   return products.firstWhere(
     (p) => p.id == id,
@@ -157,28 +206,33 @@ final communityPostsProvider = FutureProvider<List<CommunityPost>>((ref) async {
   };
 });
 
-final notificationsProvider =
-    FutureProvider<List<AppNotification>>((ref) async {
+final notificationsProvider = FutureProvider<List<AppNotification>>((
+  ref,
+) async {
   final result = await ref.watch(homeRepositoryProvider).getNotifications();
   final readPrefs = await ref.watch(notificationPreferencesProvider.future);
   final readIds = readPrefs.getReadIds();
   return switch (result) {
-    Success(:final data) => data
-        .map((n) => n.copyWith(isRead: n.isRead || readIds.contains(n.id)))
-        .toList(),
+    Success(:final data) =>
+      data
+          .map((n) => n.copyWith(isRead: n.isRead || readIds.contains(n.id)))
+          .toList(),
     ErrorResult(:final failure) => throw failure,
   };
 });
 
 final nearbyFarmersProvider = FutureProvider<List<NearbyFarmer>>((ref) async {
   final user = await ref.watch(currentUserProvider.future);
-  final result = await ref.watch(homeRepositoryProvider).getNearbyUsers(
-        latitude: user?.latitude,
-        longitude: user?.longitude,
-      );
+  // Skip nearby users if location is not set
+  if (user?.latitude == null || user?.longitude == null) {
+    return [];
+  }
+  final result = await ref
+      .watch(homeRepositoryProvider)
+      .getNearbyUsers(latitude: user!.latitude, longitude: user.longitude);
   return switch (result) {
     Success(:final data) => data,
-    ErrorResult(:final failure) => throw failure,
+    ErrorResult(:final failure) => [],
   };
 });
 
@@ -188,7 +242,8 @@ Future<void> syncFarmData(WidgetRef ref) async {
   final crops = storage.getCrops();
   final result = await ref.read(homeRepositoryProvider).syncFarmCrops(crops);
   if (result case Success()) {
-    final remote = await ref.read(homeRepositoryProvider).fetchRemoteFarmCrops();
+    final remote =
+        await ref.read(homeRepositoryProvider).fetchRemoteFarmCrops();
     if (remote case Success(:final data) when data.isNotEmpty) {
       await storage.saveCrops(data);
       ref.invalidate(farmCropsProvider);

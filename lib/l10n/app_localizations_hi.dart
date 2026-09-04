@@ -778,4 +778,82 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get harvestShort => 'कटाई';
+
+  @override
+  String get clearChat => 'Clear Chat';
+
+  @override
+  String get howCanHelpFarmToday => 'How can I help your farm today?';
+
+  @override
+  String get askAboutCropsWeatherDiseases =>
+      'Ask about crops, weather, diseases, or government schemes.';
+
+  @override
+  String get listening => 'Listening...';
+
+  @override
+  String get typeYourQuestion => 'Type your question...';
+
+  @override
+  String get communityTitle => 'Community';
+
+  @override
+  String get farmerCommunity => 'Farmer Community';
+
+  @override
+  String get farmerCommunitySubtitle =>
+      'Share crop updates, give advice, and connect with nearby farmers.';
+
+  @override
+  String get noPostsYet => 'No posts yet';
+
+  @override
+  String get noPostsYetSubtitle =>
+      'Share your first farm update with the community.';
+
+  @override
+  String get shareUpdate => 'Share Update';
+
+  @override
+  String get titleOptional => 'Title (optional)';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get whatsHappeningOnFarm => 'What\'s happening on your farm?';
+
+  @override
+  String get addPhoto => 'Add Photo';
+
+  @override
+  String get photoSelected => 'Photo Selected';
+
+  @override
+  String get post => 'Post';
+
+  @override
+  String get writeSomethingToShare => 'Write something to share';
+
+  @override
+  String get commentsTitle => 'Comments';
+
+  @override
+  String get noCommentsYet => 'No comments yet. Be the first!';
+
+  @override
+  String get addAComment => 'Add a comment';
+
+  @override
+  String get postComment => 'Post Comment';
+
+  @override
+  String get profileTitle => 'Profile';
+
+  @override
+  String get krishidnyaAI => 'CropDoc AI';
+
+  @override
+  String get askAnythingAboutFarming => 'Ask anything about farming';
 }

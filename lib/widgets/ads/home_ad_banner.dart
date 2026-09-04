@@ -1,10 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:krishidnya/core/api/api_config.dart';
+import 'package:cropdoc/core/api/api_config.dart';
 
 /// Initializes AdMob once at app startup.
 Future<void> initializeMobileAds() async {
-  await MobileAds.instance.initialize();
+  if (!kIsWeb) {
+    try {
+      await MobileAds.instance.initialize();
+    } catch (e) {
+      // Silently fail if AdMob initialization fails
+      // This prevents app crashes when AdMob is not properly configured
+      if (kDebugMode) {
+        debugPrint('AdMob initialization failed: $e');
+      }
+    }
+  }
 }
 
 /// Home-screen banner ad with fallback when ads fail to load.
@@ -25,7 +36,12 @@ class _HomeAdBannerState extends State<HomeAdBanner> {
   @override
   void initState() {
     super.initState();
-    _loadAd();
+    if (!kIsWeb) {
+      _loadAd();
+    } else {
+      // On web, show fallback immediately
+      setState(() => _failed = true);
+    }
   }
 
   void _loadAd() {
@@ -42,12 +58,19 @@ class _HomeAdBannerState extends State<HomeAdBanner> {
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
+    if (!kIsWeb) {
+      _bannerAd?.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      // On web, always show fallback
+      return _FallbackBanner(onTap: widget.onFallbackTap);
+    }
+
     if (_loaded && _bannerAd != null) {
       return SizedBox(
         height: _bannerAd!.size.height.toDouble(),

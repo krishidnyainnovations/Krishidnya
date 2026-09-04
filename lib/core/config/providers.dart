@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:krishidnya/core/network/api_client.dart';
-import 'package:krishidnya/core/services/app_logger.dart';
-import 'package:krishidnya/core/services/location_service.dart';
-import 'package:krishidnya/core/storage/preferences_service.dart';
-import 'package:krishidnya/core/storage/secure_storage_service.dart';
-import 'package:krishidnya/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:krishidnya/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:cropdoc/core/network/api_client.dart';
+import 'package:cropdoc/core/services/app_logger.dart';
+import 'package:cropdoc/core/services/location_service.dart';
+import 'package:cropdoc/core/storage/preferences_service.dart';
+import 'package:cropdoc/core/storage/secure_storage_service.dart';
+import 'package:cropdoc/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:cropdoc/features/auth/data/repositories/auth_repository_impl.dart';
 
 /// Global app logger with in-memory monitoring buffer.
 final appLoggerProvider = Provider<AppLogger>((ref) => AppLogger.instance);
@@ -18,7 +18,18 @@ final secureStorageProvider = Provider<SecureStorageService>((ref) {
 
 /// Shared preferences provider.
 final preferencesProvider = FutureProvider<PreferencesService>((ref) async {
-  return PreferencesService.create();
+  try {
+    return await PreferencesService.create();
+  } catch (e, st) {
+    final logger = ref.read(appLoggerProvider);
+    logger.error(
+      'Preferences',
+      'Failed to initialize preferences service',
+      error: e,
+      stackTrace: st,
+    );
+    rethrow;
+  }
 });
 
 /// API client provider.
@@ -53,9 +64,9 @@ final authRepositoryProvider = Provider<AuthRepositoryImpl>((ref) {
 /// Reactive log entries for the debug monitor UI.
 final logEntriesProvider =
     StateNotifierProvider<LogMonitorController, List<LogEntry>>((ref) {
-  final logger = ref.watch(appLoggerProvider);
-  return LogMonitorController(logger);
-});
+      final logger = ref.watch(appLoggerProvider);
+      return LogMonitorController(logger);
+    });
 
 /// Controls the in-app log monitor list.
 class LogMonitorController extends StateNotifier<List<LogEntry>> {

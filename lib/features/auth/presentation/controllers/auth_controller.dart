@@ -1,12 +1,12 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:krishidnya/core/config/providers.dart';
-import 'package:krishidnya/core/errors/exception_mapper.dart';
-import 'package:krishidnya/core/errors/failures.dart';
-import 'package:krishidnya/core/services/location_service.dart';
-import 'package:krishidnya/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:krishidnya/features/auth/domain/entities/location_data.dart';
-import 'package:krishidnya/features/auth/domain/entities/user.dart';
+import 'package:cropdoc/core/config/providers.dart';
+import 'package:cropdoc/core/errors/exception_mapper.dart';
+import 'package:cropdoc/core/errors/failures.dart';
+import 'package:cropdoc/core/services/location_service.dart';
+import 'package:cropdoc/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:cropdoc/features/auth/domain/entities/location_data.dart';
+import 'package:cropdoc/features/auth/domain/entities/user.dart';
 
 /// Registration form state held during the multi-step journey.
 class RegistrationState extends Equatable {
@@ -43,18 +43,17 @@ class RegistrationState extends Equatable {
     bool? isLoading,
     Failure? error,
     bool clearError = false,
-  }) =>
-      RegistrationState(
-        fullName: fullName ?? this.fullName,
-        email: email ?? this.email,
-        mobile: mobile ?? this.mobile,
-        password: password ?? this.password,
-        confirmPassword: confirmPassword ?? this.confirmPassword,
-        location: location ?? this.location,
-        step: step ?? this.step,
-        isLoading: isLoading ?? this.isLoading,
-        error: clearError ? null : (error ?? this.error),
-      );
+  }) => RegistrationState(
+    fullName: fullName ?? this.fullName,
+    email: email ?? this.email,
+    mobile: mobile ?? this.mobile,
+    password: password ?? this.password,
+    confirmPassword: confirmPassword ?? this.confirmPassword,
+    location: location ?? this.location,
+    step: step ?? this.step,
+    isLoading: isLoading ?? this.isLoading,
+    error: clearError ? null : (error ?? this.error),
+  );
 
   bool get isFormValid =>
       fullName.trim().isNotEmpty &&
@@ -65,16 +64,16 @@ class RegistrationState extends Equatable {
 
   @override
   List<Object?> get props => [
-        fullName,
-        email,
-        mobile,
-        password,
-        confirmPassword,
-        location,
-        step,
-        isLoading,
-        error,
-      ];
+    fullName,
+    email,
+    mobile,
+    password,
+    confirmPassword,
+    location,
+    step,
+    isLoading,
+    error,
+  ];
 }
 
 enum RegistrationStep {
@@ -91,9 +90,9 @@ class RegistrationController extends StateNotifier<RegistrationState> {
   RegistrationController({
     required AuthRepositoryImpl repository,
     required LocationService locationService,
-  })  : _repository = repository,
-        _locationService = locationService,
-        super(const RegistrationState());
+  }) : _repository = repository,
+       _locationService = locationService,
+       super(const RegistrationState());
 
   final AuthRepositoryImpl _repository;
   final LocationService _locationService;
@@ -205,11 +204,11 @@ class RegistrationController extends StateNotifier<RegistrationState> {
 
 final registrationControllerProvider =
     StateNotifierProvider<RegistrationController, RegistrationState>((ref) {
-  return RegistrationController(
-    repository: ref.watch(authRepositoryProvider),
-    locationService: ref.watch(locationServiceProvider),
-  );
-});
+      return RegistrationController(
+        repository: ref.watch(authRepositoryProvider),
+        locationService: ref.watch(locationServiceProvider),
+      );
+    });
 
 /// Login form state.
 class LoginState extends Equatable {
@@ -236,14 +235,13 @@ class LoginState extends Equatable {
     Failure? error,
     bool? isSuccess,
     bool clearError = false,
-  }) =>
-      LoginState(
-        mobile: mobile ?? this.mobile,
-        password: password ?? this.password,
-        isLoading: isLoading ?? this.isLoading,
-        error: clearError ? null : (error ?? this.error),
-        isSuccess: isSuccess ?? this.isSuccess,
-      );
+  }) => LoginState(
+    mobile: mobile ?? this.mobile,
+    password: password ?? this.password,
+    isLoading: isLoading ?? this.isLoading,
+    error: clearError ? null : (error ?? this.error),
+    isSuccess: isSuccess ?? this.isSuccess,
+  );
 
   @override
   List<Object?> get props => [mobile, password, isLoading, error, isSuccess];
@@ -251,8 +249,8 @@ class LoginState extends Equatable {
 
 class LoginController extends StateNotifier<LoginState> {
   LoginController({required AuthRepositoryImpl repository})
-      : _repository = repository,
-        super(const LoginState());
+    : _repository = repository,
+      super(const LoginState());
 
   final AuthRepositoryImpl _repository;
 
@@ -283,8 +281,8 @@ class LoginController extends StateNotifier<LoginState> {
 
 final loginControllerProvider =
     StateNotifierProvider<LoginController, LoginState>((ref) {
-  return LoginController(repository: ref.watch(authRepositoryProvider));
-});
+      return LoginController(repository: ref.watch(authRepositoryProvider));
+    });
 
 /// Current authenticated user.
 final currentUserProvider = FutureProvider<User?>((ref) async {
@@ -298,8 +296,21 @@ final currentUserProvider = FutureProvider<User?>((ref) async {
 
 /// Auth status check for routing.
 final authStatusProvider = FutureProvider<bool>((ref) async {
-  final repository = ref.watch(authRepositoryProvider);
-  return repository.isAuthenticated();
+  try {
+    final repository = ref.watch(authRepositoryProvider);
+    return await repository.isAuthenticated();
+  } catch (e, st) {
+    // Log error but default to unauthenticated to prevent crash
+    ref
+        .read(appLoggerProvider)
+        .error(
+          'Auth',
+          'Auth status check failed, defaulting to unauthenticated',
+          error: e,
+          stackTrace: st,
+        );
+    return false;
+  }
 });
 
 /// Refreshes cached auth state after login or registration.

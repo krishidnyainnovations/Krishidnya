@@ -3,14 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:krishidnya/core/debug/log_monitor_screen.dart';
-import 'package:krishidnya/core/routes/app_routes.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:krishidnya/l10n/app_localizations.dart';
-import 'package:krishidnya/widgets/buttons/primary_button.dart';
-import 'package:krishidnya/widgets/common/app_logo.dart';
-import 'package:krishidnya/widgets/inputs/app_text_field.dart';
+import 'package:cropdoc/core/routes/app_routes.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:cropdoc/l10n/app_localizations.dart';
+import 'package:cropdoc/widgets/buttons/primary_button.dart';
+import 'package:cropdoc/widgets/common/app_logo.dart';
+import 'package:cropdoc/widgets/inputs/app_text_field.dart';
 
 /// Calm, minimal login screen with animated logo.
 class LoginScreen extends ConsumerStatefulWidget {
@@ -49,9 +48,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (!mounted) return;
       context.go(AppRoutes.dashboard);
     } else if (state.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.error!.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(state.error!.message)));
     }
   }
 
@@ -62,9 +61,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final loginState = ref.watch(loginControllerProvider);
 
     return Scaffold(
-      floatingActionButton: DebugLogFab(
-        onTap: () => context.push(AppRoutes.logMonitor),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: AppSpacing.screenPadding,
@@ -86,10 +82,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   l10n.welcomeBack,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineMedium,
-                )
-                    .animate()
-                    .fadeIn(delay: 200.ms)
-                    .slideY(begin: 0.1, end: 0),
+                ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   l10n.loginSubtitle,
@@ -130,8 +123,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
                     ),
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
+                    onPressed:
+                        () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                   ),
                   autofillHints: const [AutofillHints.password],
                   validator: (value) {
@@ -162,13 +157,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ],
                 ).animate().fadeIn(delay: 700.ms),
-                const SizedBox(height: AppSpacing.sm),
-                Center(
-                  child: TextButton(
-                    onPressed: () => context.push(AppRoutes.otpLogin),
-                    child: Text(l10n.loginWithOtpInstead),
-                  ),
-                ).animate().fadeIn(delay: 800.ms),
               ],
             ),
           ),

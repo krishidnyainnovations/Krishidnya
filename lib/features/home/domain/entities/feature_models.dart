@@ -9,7 +9,8 @@ class CropRecommendationResult {
   });
 
   factory CropRecommendationResult.fromApiResponse(Map<String, dynamic> data) {
-    final reply = data['response'] as String? ??
+    final reply =
+        data['response'] as String? ??
         data['message'] as String? ??
         data['content'] as String? ??
         '';
@@ -37,9 +38,8 @@ class CropRecommendationResult {
       crops: [
         RecommendedCrop(
           name: 'AI Recommendation',
-          why: reply.isNotEmpty
-              ? reply
-              : 'Could not parse structured response.',
+          why:
+              reply.isNotEmpty ? reply : 'Could not parse structured response.',
         ),
       ],
       rawText: reply,
@@ -51,9 +51,10 @@ class CropRecommendationResult {
     final cropsList = json['crops'] as List<dynamic>? ?? [];
     return CropRecommendationResult(
       weatherAnalysis: WeatherAnalysis.fromJson(analysis),
-      crops: cropsList
-          .map((e) => RecommendedCrop.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      crops:
+          cropsList
+              .map((e) => RecommendedCrop.fromJson(e as Map<String, dynamic>))
+              .toList(),
     );
   }
 
@@ -119,27 +120,152 @@ class ScanCropResult {
     this.dosage,
     this.products,
     this.raw,
+    this.plantName,
+    this.plantType,
+    this.healthStatus,
+    this.severity,
+    this.symptoms,
+    this.affectedParts,
+    this.treatmentMethods,
+    this.prevention,
+    // New fields from improved backend schema
+    this.diseaseScientificName,
+    this.overallCondition,
+    this.diseaseDetected,
+    this.organicEffectiveness,
+    this.chemicalEffectiveness,
+    this.homeRemedies,
+    this.culturalPractices,
+    this.cropRotation,
+    this.resistantVarieties,
+    this.additionalNotes,
+    this.economicImpact,
+    this.spreadRisk,
+    this.recommendedProducts,
   });
 
   factory ScanCropResult.fromJson(Map<String, dynamic> json) {
-    final organic = json['organic_cure'] as String? ??
-        json['organic_treatment'] as String?;
-    final chemical = json['chemical_cure'] as String? ??
-        json['chemical_treatment'] as String?;
+    // Handle improved backend response structure
+    final organicTreatment = json['organic_treatment'] as Map<String, dynamic>?;
+    final chemicalTreatment =
+        json['chemical_treatment'] as Map<String, dynamic>?;
+    final prevention = json['prevention'] as Map<String, dynamic>?;
+
+    // Extract organic cure methods
+    List<String> organicMethods = [];
+    if (organicTreatment != null) {
+      if (organicTreatment['methods'] is List) {
+        organicMethods =
+            (organicTreatment['methods'] as List<dynamic>)
+                .map((e) => e.toString())
+                .toList();
+      }
+      if (organicTreatment['home_remedies'] is List) {
+        organicMethods.addAll(
+          (organicTreatment['home_remedies'] as List<dynamic>)
+              .map((e) => e.toString())
+              .toList(),
+        );
+      }
+    }
+
+    // Extract chemical fungicides with dosage information
+    List<String> chemicalFungicides = [];
+    if (chemicalTreatment != null && chemicalTreatment['fungicides'] is List) {
+      chemicalFungicides =
+          (chemicalTreatment['fungicides'] as List<dynamic>)
+              .map((e) => e.toString())
+              .toList();
+    }
+
+    // Extract symptoms
+    List<String> symptomsList = [];
+    if (json['symptoms'] is List) {
+      symptomsList =
+          (json['symptoms'] as List<dynamic>).map((e) => e.toString()).toList();
+    }
+
+    // Extract affected parts
+    List<String> affectedPartsList = [];
+    if (json['affected_parts'] is List) {
+      affectedPartsList =
+          (json['affected_parts'] as List<dynamic>)
+              .map((e) => e.toString())
+              .toList();
+    }
+
+    // Extract prevention methods
+    List<String> preventionMethods = [];
+    if (prevention != null) {
+      if (prevention['cultural_practices'] is List) {
+        preventionMethods.addAll(
+          (prevention['cultural_practices'] as List<dynamic>)
+              .map((e) => e.toString())
+              .toList(),
+        );
+      }
+      if (prevention['resistant_varieties'] is List) {
+        preventionMethods.addAll(
+          (prevention['resistant_varieties'] as List<dynamic>)
+              .map((e) => e.toString())
+              .toList(),
+        );
+      }
+    }
+
+    // Extract recommended products with confidence
+    List<RecommendedProduct> recommendedProductsList = [];
+    if (chemicalTreatment != null && chemicalTreatment['fungicides'] is List) {
+      final fungicides = chemicalTreatment['fungicides'] as List<dynamic>;
+      for (var fungicide in fungicides) {
+        if (fungicide is String) {
+          recommendedProductsList.add(RecommendedProduct(
+            name: fungicide,
+            dosage: chemicalTreatment['tank_mix_compatibility'] as String?,
+            confidence: double.tryParse(json['confidence']?.toString() ?? '0'),
+          ));
+        }
+      }
+    }
 
     return ScanCropResult(
-      disease: json['disease'] as String? ??
+      disease:
+          json['disease_name'] as String? ??
+          json['disease'] as String? ??
           json['diagnosis'] as String? ??
           json['condition'] as String? ??
           'Analysis Result',
-      confidence: json['confidence'] as String? ??
-          json['confidence_score']?.toString(),
-      organicCure: organic,
-      chemicalCure: chemical,
-      dosage: json['dosage'] as String? ?? json['dosage_per_ltr'] as String?,
-      products: json['recommended_products'] as String? ??
-          json['products']?.toString(),
+      confidence:
+          json['confidence'] as String? ?? json['confidence_score']?.toString(),
+      organicCure: organicMethods.isNotEmpty ? organicMethods.join(', ') : null,
+      chemicalCure:
+          chemicalFungicides.isNotEmpty ? chemicalFungicides.join(', ') : null,
+      dosage: chemicalTreatment?['tank_mix_compatibility'] as String?,
+      products:
+          chemicalFungicides.isNotEmpty ? chemicalFungicides.join(', ') : null,
+      plantName: json['plant_name'] as String?,
+      plantType: json['plant_type'] as String?,
+      healthStatus: json['health_status'] as String?,
+      severity: json['severity'] as String?,
+      symptoms: symptomsList,
+      affectedParts: affectedPartsList,
+      treatmentMethods: organicMethods,
+      prevention: preventionMethods,
       raw: json,
+      // New fields from improved backend schema
+      diseaseScientificName: json['disease_scientific_name'] as String?,
+      overallCondition: json['overall_condition'] as String?,
+      diseaseDetected: json['disease_detected'] as bool?,
+      organicEffectiveness: organicTreatment?['effectiveness'] as String?,
+      chemicalEffectiveness: chemicalTreatment?['effectiveness'] as String?,
+      homeRemedies: (organicTreatment?['home_remedies'] as List<dynamic>?)?.cast<String>(),
+      culturalPractices: (prevention?['cultural_practices'] as List<dynamic>?)?.cast<String>(),
+      cropRotation: prevention?['crop_rotation'] as String?,
+      resistantVarieties: prevention?['resistant_varieties'] as List<dynamic>?.cast<String>(),
+      additionalNotes: json['additional_notes'] as String?,
+      economicImpact: json['economic_impact'] as String?,
+      spreadRisk: json['spread_risk'] as String?,
+      recommendedProducts: recommendedProductsList,
     );
   }
 
@@ -149,7 +275,43 @@ class ScanCropResult {
   final String? chemicalCure;
   final String? dosage;
   final String? products;
+  final String? plantName;
+  final String? plantType;
+  final String? healthStatus;
+  final String? severity;
+  final List<String>? symptoms;
+  final List<String>? affectedParts;
+  final List<String>? treatmentMethods;
+  final List<String>? prevention;
   final Map<String, dynamic>? raw;
+  
+  // New fields from improved backend schema
+  final String? diseaseScientificName;
+  final String? overallCondition;
+  final bool? diseaseDetected;
+  final String? organicEffectiveness;
+  final String? chemicalEffectiveness;
+  final List<String>? homeRemedies;
+  final List<String>? culturalPractices;
+  final String? cropRotation;
+  final List<String>? resistantVarieties;
+  final String? additionalNotes;
+  final String? economicImpact;
+  final String? spreadRisk;
+  final List<RecommendedProduct>? recommendedProducts;
+}
+
+/// Recommended product with dosage and confidence information
+class RecommendedProduct {
+  const RecommendedProduct({
+    required this.name,
+    this.dosage,
+    this.confidence,
+  });
+
+  final String name;
+  final String? dosage;
+  final double? confidence;
 }
 
 /// In-app notification from backend.
@@ -181,13 +343,13 @@ class AppNotification {
   final String? type;
 
   AppNotification copyWith({bool? isRead}) => AppNotification(
-        id: id,
-        title: title,
-        body: body,
-        createdAt: createdAt,
-        isRead: isRead ?? this.isRead,
-        type: type,
-      );
+    id: id,
+    title: title,
+    body: body,
+    createdAt: createdAt,
+    isRead: isRead ?? this.isRead,
+    type: type,
+  );
 }
 
 /// Nearby farmer profile.
@@ -201,14 +363,13 @@ class NearbyFarmer {
   });
 
   factory NearbyFarmer.fromJson(Map<String, dynamic> json) => NearbyFarmer(
-        id: json['id']?.toString() ?? '',
-        name: json['full_name'] as String? ??
-            json['username'] as String? ??
-            'Farmer',
-        location: json['location'] as String? ?? json['city'] as String?,
-        distanceKm: (json['distance_km'] as num?)?.toDouble(),
-        mobile: json['mobile'] as String?,
-      );
+    id: json['id']?.toString() ?? '',
+    name:
+        json['full_name'] as String? ?? json['username'] as String? ?? 'Farmer',
+    location: json['location'] as String? ?? json['city'] as String?,
+    distanceKm: (json['distance_km'] as num?)?.toDouble(),
+    mobile: json['mobile'] as String?,
+  );
 
   final String id;
   final String name;
@@ -231,7 +392,8 @@ class PostComment {
     return PostComment(
       id: json['id']?.toString() ?? '',
       content: json['content'] as String? ?? '',
-      authorName: author?['full_name'] as String? ??
+      authorName:
+          author?['full_name'] as String? ??
           author?['username'] as String? ??
           'Farmer',
       createdAt: json['created_at'] as String? ?? '',

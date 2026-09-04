@@ -1,10 +1,10 @@
-import 'package:krishidnya/core/errors/exception_mapper.dart';
-import 'package:krishidnya/core/services/app_logger.dart';
-import 'package:krishidnya/core/utils/username_generator.dart';
-import 'package:krishidnya/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:krishidnya/features/auth/domain/entities/auth_models.dart';
-import 'package:krishidnya/features/auth/domain/entities/location_data.dart';
-import 'package:krishidnya/features/auth/domain/entities/user.dart';
+import 'package:cropdoc/core/errors/exception_mapper.dart';
+import 'package:cropdoc/core/services/app_logger.dart';
+import 'package:cropdoc/core/utils/username_generator.dart';
+import 'package:cropdoc/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:cropdoc/features/auth/domain/entities/auth_models.dart';
+import 'package:cropdoc/features/auth/domain/entities/location_data.dart';
+import 'package:cropdoc/features/auth/domain/entities/user.dart';
 
 /// Repository interface for authentication operations.
 abstract interface class AuthRepository {
@@ -43,13 +43,6 @@ abstract interface class AuthRepository {
     String? state,
   });
 
-  Future<Result<bool>> sendOtp(String mobile);
-
-  Future<Result<AuthResponse>> verifyOtp({
-    required String mobile,
-    required String otp,
-  });
-
   Future<Result<bool>> deleteAccount();
 }
 
@@ -58,8 +51,8 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
     required AuthRemoteDataSource remoteDataSource,
     AppLogger? logger,
-  })  : _remote = remoteDataSource,
-        _logger = logger ?? AppLogger.instance;
+  }) : _remote = remoteDataSource,
+       _logger = logger ?? AppLogger.instance;
 
   final AuthRemoteDataSource _remote;
   final AppLogger _logger;
@@ -188,7 +181,12 @@ class AuthRepositoryImpl implements AuthRepository {
       return Success(user);
     } catch (e, st) {
       final failure = ExceptionMapper.map(e);
-      _logger.error('AuthRepo', 'Update profile failed', error: e, stackTrace: st);
+      _logger.error(
+        'AuthRepo',
+        'Update profile failed',
+        error: e,
+        stackTrace: st,
+      );
       return ErrorResult(failure);
     }
   }
@@ -212,34 +210,12 @@ class AuthRepositoryImpl implements AuthRepository {
       return Success(user);
     } catch (e, st) {
       final failure = ExceptionMapper.map(e);
-      _logger.error('AuthRepo', 'Update location failed', error: e, stackTrace: st);
-      return ErrorResult(failure);
-    }
-  }
-
-  @override
-  Future<Result<bool>> sendOtp(String mobile) async {
-    try {
-      await _remote.sendOtp(mobile);
-      return const Success(true);
-    } catch (e, st) {
-      final failure = ExceptionMapper.map(e);
-      _logger.error('AuthRepo', 'Send OTP failed', error: e, stackTrace: st);
-      return ErrorResult(failure);
-    }
-  }
-
-  @override
-  Future<Result<AuthResponse>> verifyOtp({
-    required String mobile,
-    required String otp,
-  }) async {
-    try {
-      final response = await _remote.verifyOtp(mobile: mobile, otp: otp);
-      return Success(response);
-    } catch (e, st) {
-      final failure = ExceptionMapper.map(e);
-      _logger.error('AuthRepo', 'Verify OTP failed', error: e, stackTrace: st);
+      _logger.error(
+        'AuthRepo',
+        'Update location failed',
+        error: e,
+        stackTrace: st,
+      );
       return ErrorResult(failure);
     }
   }
@@ -251,7 +227,12 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Success(true);
     } catch (e, st) {
       final failure = ExceptionMapper.map(e);
-      _logger.error('AuthRepo', 'Delete account failed', error: e, stackTrace: st);
+      _logger.error(
+        'AuthRepo',
+        'Delete account failed',
+        error: e,
+        stackTrace: st,
+      );
       return ErrorResult(failure);
     }
   }

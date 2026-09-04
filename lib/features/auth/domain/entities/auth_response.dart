@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:krishidnya/features/auth/domain/entities/user.dart';
+import 'package:cropdoc/features/auth/domain/entities/user.dart';
 
 /// Combined auth result after login or register+login.
 class AuthResponse extends Equatable {

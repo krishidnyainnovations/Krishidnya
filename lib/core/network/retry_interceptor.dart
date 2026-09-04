@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
-import 'package:krishidnya/core/constants/app_constants.dart';
-import 'package:krishidnya/core/services/app_logger.dart';
+import 'package:cropdoc/core/constants/app_constants.dart';
+import 'package:cropdoc/core/services/app_logger.dart';
 
 /// Retries failed requests on transient network errors.
 class RetryInterceptor extends Interceptor {
   RetryInterceptor({required Dio dio, AppLogger? logger})
-      : _dio = dio,
-        _logger = logger ?? AppLogger.instance;
+    : _dio = dio,
+      _logger = logger ?? AppLogger.instance;
 
   final Dio _dio;
   final AppLogger _logger;
@@ -46,6 +46,12 @@ class RetryInterceptor extends Interceptor {
   }
 
   bool _shouldRetry(DioException err) {
+    // Don't retry chat requests that timeout (they take too long)
+    final isChatRequest = err.requestOptions.path.contains('/chat');
+    if (isChatRequest && err.type == DioExceptionType.receiveTimeout) {
+      return false;
+    }
+
     return err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.connectionError ||

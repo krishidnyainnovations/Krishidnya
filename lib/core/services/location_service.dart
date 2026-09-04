@@ -1,26 +1,38 @@
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:krishidnya/core/errors/exception_mapper.dart';
-import 'package:krishidnya/core/errors/failures.dart';
-import 'package:krishidnya/features/auth/domain/entities/location_data.dart';
+import 'package:cropdoc/core/errors/exception_mapper.dart';
+import 'package:cropdoc/core/errors/failures.dart';
+import 'package:cropdoc/features/auth/domain/entities/location_data.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /// Handles GPS location fetching and reverse geocoding.
 class LocationService {
+  final Geocoding _geocoding = Geocoding();
+
   /// Checks if location services are enabled on device.
   Future<bool> isLocationServiceEnabled() =>
       Geolocator.isLocationServiceEnabled();
 
   /// Requests location permission from the user.
   Future<bool> requestPermission() async {
-    final status = await Permission.locationWhenInUse.request();
-    return status.isGranted;
+    try {
+      final status = await Permission.locationWhenInUse.request();
+      return status.isGranted;
+    } catch (e) {
+      // If permission request fails, return false
+      return false;
+    }
   }
 
   /// Returns current permission status.
   Future<bool> hasPermission() async {
-    final status = await Permission.locationWhenInUse.status;
-    return status.isGranted;
+    try {
+      final status = await Permission.locationWhenInUse.status;
+      return status.isGranted;
+    } catch (e) {
+      // If permission check fails, return false
+      return false;
+    }
   }
 
   /// Fetches current GPS coordinates and reverse geocodes to city/state.
@@ -55,7 +67,7 @@ class LocationService {
 
   Future<Result<LocationData>> _reverseGeocode(Position position) async {
     try {
-      final placemarks = await placemarkFromCoordinates(
+      final placemarks = await _geocoding.placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       );
@@ -73,9 +85,11 @@ class LocationService {
       final city = place.locality ?? place.subAdministrativeArea;
       final state = place.administrativeArea;
       final country = place.country;
-      final formatted = [city, state, country]
-          .where((e) => e != null && e.isNotEmpty)
-          .join(', ');
+      final formatted = [
+        city,
+        state,
+        country,
+      ].where((e) => e != null && e.isNotEmpty).join(', ');
 
       return Success(
         LocationData(

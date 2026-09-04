@@ -12,9 +12,15 @@ abstract final class AppConstants {
   static const String localeKey = 'locale';
 
   // Network
-  static const Duration connectTimeout = Duration(seconds: 30);
-  static const Duration receiveTimeout = Duration(seconds: 30);
-  static const int maxRetryAttempts = 3;
+  static const Duration connectTimeout = Duration(seconds: 15);
+  static const Duration receiveTimeout = Duration(seconds: 20);
+  static const Duration chatTimeout = Duration(
+    seconds: 60,
+  ); // AI responses take longer
+  static const Duration imageTimeout = Duration(
+    seconds: 45,
+  ); // Image processing takes longer
+  static const int maxRetryAttempts = 2;
 
   // Animation durations
   static const Duration animationFast = Duration(milliseconds: 200);

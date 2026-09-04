@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Krishidnya';
+  String get appName => 'CropDoc';
 
   @override
   String get appTagline => 'Your trusted farming companion';
@@ -36,7 +36,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Detect diseases early, track your crops, and get personalized recommendations.';
 
   @override
-  String get onboardingPage4Title => 'Welcome to Krishidnya';
+  String get onboardingPage4Title => 'Welcome to CropDoc';
 
   @override
   String get onboardingPage4Subtitle =>
@@ -135,7 +135,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountCreatedSubtitle =>
-      'Welcome to Krishidnya. Let\'s begin your journey.';
+      'Welcome to CropDoc. Let\'s begin your journey.';
 
   @override
   String get enterDashboard => 'Enter Dashboard';
@@ -369,7 +369,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
-  String get appVersion => 'Krishidnya v1.0.0';
+  String get appVersion => 'CropDoc v1.0.0';
 
   @override
   String get logOutConfirmTitle => 'Log Out';
@@ -448,10 +448,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gallery => 'Gallery';
 
   @override
-  String get organicCureRecommended => 'Organic Cure (Recommended)';
+  String get organicCureRecommended => 'Organic Cure Recommended';
 
   @override
-  String get chemicalCure => 'Chemical Cure';
+  String get chemicalCure => 'Chemical Treatment';
 
   @override
   String get recommendedProducts => 'Recommended Products';
@@ -461,7 +461,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String confidenceLabel(String value) {
-    return 'Confidence: $value';
+    return 'Confidence: $value%';
   }
 
   @override
@@ -779,4 +779,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get harvestShort => 'Harvest';
+
+  @override
+  String get clearChat => 'Clear Chat';
+
+  @override
+  String get howCanHelpFarmToday => 'How can I help your farm today?';
+
+  @override
+  String get askAboutCropsWeatherDiseases =>
+      'Ask about crops, weather, diseases, or government schemes.';
+
+  @override
+  String get listening => 'Listening...';
+
+  @override
+  String get typeYourQuestion => 'Type your question...';
+
+  @override
+  String get communityTitle => 'Community';
+
+  @override
+  String get farmerCommunity => 'Farmer Community';
+
+  @override
+  String get farmerCommunitySubtitle =>
+      'Share crop updates, give advice, and connect with nearby farmers.';
+
+  @override
+  String get noPostsYet => 'No posts yet';
+
+  @override
+  String get noPostsYetSubtitle =>
+      'Share your first farm update with the community.';
+
+  @override
+  String get shareUpdate => 'Share Update';
+
+  @override
+  String get titleOptional => 'Title (optional)';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get whatsHappeningOnFarm => 'What\'s happening on your farm?';
+
+  @override
+  String get addPhoto => 'Add Photo';
+
+  @override
+  String get photoSelected => 'Photo Selected';
+
+  @override
+  String get post => 'Post';
+
+  @override
+  String get writeSomethingToShare => 'Write something to share';
+
+  @override
+  String get commentsTitle => 'Comments';
+
+  @override
+  String get noCommentsYet => 'No comments yet. Be the first!';
+
+  @override
+  String get addAComment => 'Add a comment';
+
+  @override
+  String get postComment => 'Post Comment';
+
+  @override
+  String get profileTitle => 'Profile';
+
+  @override
+  String get krishidnyaAI => 'CropDoc AI';
+
+  @override
+  String get askAnythingAboutFarming => 'Ask anything about farming';
 }

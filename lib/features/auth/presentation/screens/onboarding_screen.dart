@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:krishidnya/core/constants/app_constants.dart';
-import 'package:krishidnya/core/routes/app_routes.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/l10n/app_localizations.dart';
-import 'package:krishidnya/widgets/buttons/primary_button.dart';
-import 'package:krishidnya/widgets/common/app_logo.dart';
+import 'package:cropdoc/core/constants/app_constants.dart';
+import 'package:cropdoc/core/routes/app_routes.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/l10n/app_localizations.dart';
+import 'package:cropdoc/widgets/buttons/primary_button.dart';
+import 'package:cropdoc/widgets/common/app_logo.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 /// Emotional storytelling onboarding journey.

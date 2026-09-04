@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:krishidnya/core/api/api_config.dart';
-import 'package:krishidnya/core/config/providers.dart';
-import 'package:krishidnya/core/services/app_logger.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
+import 'package:cropdoc/core/api/api_config.dart';
+import 'package:cropdoc/core/config/providers.dart';
+import 'package:cropdoc/core/services/app_logger.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
 
 /// In-app log monitor for debugging API and auth errors.
 class LogMonitorScreen extends ConsumerWidget {

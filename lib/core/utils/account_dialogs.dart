@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:krishidnya/core/config/providers.dart';
-import 'package:krishidnya/core/errors/exception_mapper.dart';
-import 'package:krishidnya/core/routes/app_routes.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
-import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
+import 'package:cropdoc/core/config/providers.dart';
+import 'package:cropdoc/core/errors/exception_mapper.dart';
+import 'package:cropdoc/core/routes/app_routes.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:cropdoc/features/home/presentation/controllers/home_providers.dart';
+import 'package:cropdoc/widgets/feedback/app_snackbar.dart';
 
 /// Shared terms & conditions text.
 const kTermsText = '''

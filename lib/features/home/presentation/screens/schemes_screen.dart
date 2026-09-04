@@ -1,17 +1,19 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:krishidnya/core/errors/exception_mapper.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
-import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
-import 'package:krishidnya/l10n/app_localizations.dart';
-import 'package:krishidnya/widgets/buttons/primary_button.dart';
-import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
-import 'package:krishidnya/widgets/inputs/app_text_field.dart';
+import 'package:cropdoc/core/errors/exception_mapper.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:cropdoc/features/home/domain/entities/home_entities.dart';
+import 'package:cropdoc/features/home/presentation/controllers/home_providers.dart';
+import 'package:cropdoc/l10n/app_localizations.dart';
+import 'package:cropdoc/widgets/buttons/primary_button.dart';
+import 'package:cropdoc/widgets/feedback/app_snackbar.dart';
+import 'package:cropdoc/widgets/inputs/app_text_field.dart';
 
 /// Government schemes listing with search, filter, and apply flow.
 class SchemesScreen extends ConsumerStatefulWidget {
@@ -23,16 +25,32 @@ class SchemesScreen extends ConsumerStatefulWidget {
 
 class _SchemesScreenState extends ConsumerState<SchemesScreen> {
   final _searchController = TextEditingController();
+  Timer? _debounceTimer;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
   void _applySearch() {
+    // Cancel any pending search
+    _debounceTimer?.cancel();
+
+    // Apply search immediately when user taps search button
     ref.read(schemesSearchProvider.notifier).state =
         _searchController.text.trim();
+  }
+
+  void _onSearchChanged(String value) {
+    // Cancel previous timer
+    _debounceTimer?.cancel();
+
+    // Set new timer for 500ms debounce
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      ref.read(schemesSearchProvider.notifier).state = value.trim();
+    });
   }
 
   @override
@@ -54,6 +72,7 @@ class _SchemesScreenState extends ConsumerState<SchemesScreen> {
                     label: l10n.searchSchemes,
                     controller: _searchController,
                     textInputAction: TextInputAction.search,
+                    onChanged: _onSearchChanged,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -66,8 +85,8 @@ class _SchemesScreenState extends ConsumerState<SchemesScreen> {
           ),
           schemesAsync.maybeWhen(
             data: (schemes) {
-              final types = schemes.map((s) => s.schemeType).toSet().toList()
-                ..sort();
+              final types =
+                  schemes.map((s) => s.schemeType).toSet().toList()..sort();
               if (types.isEmpty) return const SizedBox.shrink();
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -77,9 +96,11 @@ class _SchemesScreenState extends ConsumerState<SchemesScreen> {
                     FilterChip(
                       label: Text(l10n.all),
                       selected: typeFilter == null,
-                      onSelected: (_) =>
-                          ref.read(schemesTypeFilterProvider.notifier).state =
-                              null,
+                      onSelected:
+                          (_) =>
+                              ref
+                                  .read(schemesTypeFilterProvider.notifier)
+                                  .state = null,
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     ...types.map(
@@ -88,9 +109,11 @@ class _SchemesScreenState extends ConsumerState<SchemesScreen> {
                         child: FilterChip(
                           label: Text(t),
                           selected: typeFilter == t,
-                          onSelected: (_) => ref
-                              .read(schemesTypeFilterProvider.notifier)
-                              .state = t,
+                          onSelected:
+                              (_) =>
+                                  ref
+                                      .read(schemesTypeFilterProvider.notifier)
+                                      .state = t,
                         ),
                       ),
                     ),
@@ -103,24 +126,30 @@ class _SchemesScreenState extends ConsumerState<SchemesScreen> {
           const SizedBox(height: AppSpacing.sm),
           Expanded(
             child: schemesAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
-              error: (e, _) =>
-                  Center(child: Text(l10n.couldNotLoadSchemes('$e'))),
-              data: (schemes) => schemes.isEmpty
-                  ? Center(child: Text(l10n.noSchemesMatch))
-                  : RefreshIndicator(
-                      onRefresh: () async => ref.invalidate(schemesProvider),
-                      child: ListView.separated(
-                        padding: AppSpacing.screenPadding,
-                        itemCount: schemes.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: AppSpacing.sm),
-                        itemBuilder: (context, i) =>
-                            _SchemeCard(scheme: schemes[i]),
-                      ),
-                    ),
+              loading:
+                  () => const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+              error:
+                  (e, _) => Center(child: Text(l10n.couldNotLoadSchemes('$e'))),
+              data:
+                  (schemes) =>
+                      schemes.isEmpty
+                          ? Center(child: Text(l10n.noSchemesMatch))
+                          : RefreshIndicator(
+                            onRefresh:
+                                () async => ref.invalidate(schemesProvider),
+                            child: ListView.separated(
+                              padding: AppSpacing.screenPadding,
+                              itemCount: schemes.length,
+                              separatorBuilder:
+                                  (_, __) =>
+                                      const SizedBox(height: AppSpacing.sm),
+                              itemBuilder:
+                                  (context, i) =>
+                                      _SchemeCard(scheme: schemes[i]),
+                            ),
+                          ),
             ),
           ),
         ],
@@ -148,87 +177,99 @@ class _SchemeCard extends ConsumerWidget {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.lg,
-            right: AppSpacing.lg,
-            top: AppSpacing.lg,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
+      builder:
+          (ctx) => StatefulBuilder(
+            builder:
+                (ctx, setState) => Padding(
+                  padding: EdgeInsets.only(
+                    left: AppSpacing.lg,
+                    right: AppSpacing.lg,
+                    top: AppSpacing.lg,
+                    bottom:
+                        MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        l10n.applyForTitle(scheme.title),
+                        style: Theme.of(ctx).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        l10n.teamFillForm,
+                        style: Theme.of(ctx).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      AppTextField(
+                        label: l10n.fullName,
+                        controller: nameController,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppTextField(
+                        label: l10n.mobileNumber,
+                        controller: mobileController,
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppTextField(
+                        label: l10n.villageName,
+                        controller: villageController,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      PrimaryButton(
+                        label: l10n.submitApplication,
+                        isLoading: isLoading,
+                        onPressed:
+                            isLoading
+                                ? null
+                                : () async {
+                                  if (nameController.text.isEmpty ||
+                                      mobileController.text.isEmpty ||
+                                      villageController.text.isEmpty) {
+                                    AppSnackBar.error(ctx, l10n.fillAllFields);
+                                    return;
+                                  }
+                                  setState(() => isLoading = true);
+                                  final userId = int.tryParse(
+                                    ref
+                                            .read(currentUserProvider)
+                                            .valueOrNull
+                                            ?.id ??
+                                        '',
+                                  );
+                                  final result = await ref
+                                      .read(homeRepositoryProvider)
+                                      .applyScheme(
+                                        schemeId: scheme.id,
+                                        name: nameController.text.trim(),
+                                        mobile: mobileController.text.trim(),
+                                        villageName:
+                                            villageController.text.trim(),
+                                        userId: userId,
+                                      );
+                                  if (!ctx.mounted) return;
+                                  setState(() => isLoading = false);
+                                  switch (result) {
+                                    case Success():
+                                      Navigator.pop(ctx);
+                                      AppSnackBar.success(
+                                        context,
+                                        l10n.applicationSubmitted,
+                                      );
+                                    case ErrorResult(:final failure):
+                                      AppSnackBar.error(
+                                        context,
+                                        failure.message,
+                                      );
+                                  }
+                                },
+                      ),
+                    ],
+                  ),
+                ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                l10n.applyForTitle(scheme.title),
-                style: Theme.of(ctx).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                l10n.teamFillForm,
-                style: Theme.of(ctx).textTheme.bodySmall,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              AppTextField(
-                label: l10n.fullName,
-                controller: nameController,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                label: l10n.mobileNumber,
-                controller: mobileController,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                label: l10n.villageName,
-                controller: villageController,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              PrimaryButton(
-                label: l10n.submitApplication,
-                isLoading: isLoading,
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        if (nameController.text.isEmpty ||
-                            mobileController.text.isEmpty ||
-                            villageController.text.isEmpty) {
-                          AppSnackBar.error(ctx, l10n.fillAllFields);
-                          return;
-                        }
-                        setState(() => isLoading = true);
-                        final userId = int.tryParse(
-                          ref.read(currentUserProvider).valueOrNull?.id ?? '',
-                        );
-                        final result = await ref
-                            .read(homeRepositoryProvider)
-                            .applyScheme(
-                              schemeId: scheme.id,
-                              name: nameController.text.trim(),
-                              mobile: mobileController.text.trim(),
-                              villageName: villageController.text.trim(),
-                              userId: userId,
-                            );
-                        if (!ctx.mounted) return;
-                        setState(() => isLoading = false);
-                        switch (result) {
-                          case Success():
-                            Navigator.pop(ctx);
-                            AppSnackBar.success(
-                              context,
-                              l10n.applicationSubmitted,
-                            );
-                          case ErrorResult(:final failure):
-                            AppSnackBar.error(context, failure.message);
-                        }
-                      },
-              ),
-            ],
-          ),
-        ),
-      ),
     );
 
     nameController.dispose();
@@ -271,9 +312,9 @@ class _SchemeCard extends ConsumerWidget {
                       child: Text(
                         scheme.schemeType,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -282,8 +323,8 @@ class _SchemeCard extends ConsumerWidget {
                 Text(
                   scheme.title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(

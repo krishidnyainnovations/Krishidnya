@@ -4,7 +4,8 @@ abstract final class AppRoutes {
   static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String register = '/register';
-  static const String registerLocationPermission = '/register/location-permission';
+  static const String registerLocationPermission =
+      '/register/location-permission';
   static const String registerLocationLoading = '/register/location-loading';
   static const String registerLocationFound = '/register/location-found';
   static const String registerAlmostReady = '/register/almost-ready';
@@ -27,7 +28,6 @@ abstract final class AppRoutes {
   static const String profile = '/profile';
   static const String settings = '/settings';
   static const String profileEdit = '/profile/edit';
-  static const String otpLogin = '/login/otp';
   static const String notifications = '/notifications';
   static const String nearbyFarmers = '/community/nearby';
   static const String productDetail = '/marketplace/:id';

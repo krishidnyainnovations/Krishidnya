@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:krishidnya/core/constants/app_constants.dart';
-import 'package:krishidnya/core/debug/log_monitor_screen.dart';
-import 'package:krishidnya/core/routes/app_routes.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/features/home/presentation/screens/home_screen.dart';
-import 'package:krishidnya/features/home/presentation/screens/social_screens.dart';
-import 'package:krishidnya/l10n/app_localizations.dart';
+import 'package:cropdoc/core/constants/app_constants.dart';
+import 'package:cropdoc/core/routes/app_routes.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/features/home/presentation/screens/home_screen.dart';
+import 'package:cropdoc/features/home/presentation/screens/social_screens.dart';
+import 'package:cropdoc/l10n/app_localizations.dart';
 
 /// Main shell: Home · Chat · Scan · Community · Profile
 class MainShell extends StatefulWidget {
@@ -20,13 +19,12 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
-
-  static const _screens = [
-    HomeScreen(),
-    ChatScreen(),
-    ScanCropScreen(),
-    CommunityScreen(),
-    ProfileScreen(),
+  final List<Widget> _screens = [
+    const HomeScreen(),
+    const ChatScreen(),
+    const ScanCropScreen(),
+    const CommunityScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -34,18 +32,7 @@ class _MainShellState extends State<MainShell> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      body: AnimatedSwitcher(
-        duration: AppConstants.animationNormal,
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.easeInCubic,
-        child: KeyedSubtree(
-          key: ValueKey<int>(_selectedIndex),
-          child: _screens[_selectedIndex],
-        ),
-      ),
-      floatingActionButton: _selectedIndex == 2
-          ? null
-          : DebugLogFab(onTap: () => context.push(AppRoutes.logMonitor)),
+      body: IndexedStack(index: _selectedIndex, children: _screens),
       bottomNavigationBar: _BottomNavBar(
         selectedIndex: _selectedIndex,
         onSelected: (i) => setState(() => _selectedIndex = i),
@@ -206,9 +193,10 @@ class _ScanButton extends StatelessWidget {
                 offset: const Offset(0, 4),
               ),
             ],
-            border: selected
-                ? Border.all(color: AppColors.secondary, width: 3)
-                : null,
+            border:
+                selected
+                    ? Border.all(color: AppColors.secondary, width: 3)
+                    : null,
           ),
           child: const Icon(
             Icons.camera_alt_rounded,

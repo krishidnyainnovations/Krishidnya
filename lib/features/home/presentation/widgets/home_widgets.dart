@@ -1,16 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:krishidnya/core/constants/app_constants.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
+import 'package:cropdoc/core/constants/app_constants.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
 
 /// Auto-scrolling banner carousel for home screen.
 class HomeBannerCarousel extends StatefulWidget {
-  const HomeBannerCarousel({
-    required this.items,
-    super.key,
-  });
+  const HomeBannerCarousel({required this.items, super.key});
 
   final List<Widget> items;
 
@@ -61,10 +58,13 @@ class _HomeBannerCarouselState extends State<HomeBannerCarousel> {
             controller: _controller,
             onPageChanged: (i) => setState(() => _current = i),
             itemCount: widget.items.length,
-            itemBuilder: (_, i) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-              child: widget.items[i],
-            ),
+            itemBuilder:
+                (_, i) => Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xs,
+                  ),
+                  child: widget.items[i],
+                ),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -78,9 +78,7 @@ class _HomeBannerCarouselState extends State<HomeBannerCarousel> {
               width: _current == i ? 20 : 8,
               height: 8,
               decoration: BoxDecoration(
-                color: _current == i
-                    ? AppColors.primary
-                    : AppColors.outline,
+                color: _current == i ? AppColors.primary : AppColors.outline,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -139,21 +137,25 @@ class PromoBanner extends StatelessWidget {
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.xxs),
                       Text(
                         subtitle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Icon(icon, size: 48, color: Colors.white.withValues(alpha: 0.85)),
+                Icon(
+                  icon,
+                  size: 48,
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
               ],
             ),
           ),
@@ -197,6 +199,7 @@ class QuickActionTile extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.sm),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
@@ -207,21 +210,28 @@ class QuickActionTile extends StatelessWidget {
                   child: Icon(icon, color: color, size: 26),
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                Flexible(
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                    ),
+                  ),
                 ),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall,
+                Flexible(
+                  child: Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(fontSize: 10),
+                  ),
                 ),
               ],
             ),

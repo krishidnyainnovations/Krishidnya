@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:krishidnya/core/storage/preferences_service.dart';
+import 'package:cropdoc/core/storage/preferences_service.dart';
 
 /// Persists chat conversation history locally.
 class ChatHistoryService {

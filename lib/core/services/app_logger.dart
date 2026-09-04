@@ -32,7 +32,9 @@ class LogEntry {
 
   @override
   String toString() {
-    final buffer = StringBuffer('[$formattedTime] [${level.name.toUpperCase()}] [$tag] $message');
+    final buffer = StringBuffer(
+      '[$formattedTime] [${level.name.toUpperCase()}] [$tag] $message',
+    );
     if (details != null && details!.isNotEmpty) {
       buffer.write('\n  ↳ $details');
     }
@@ -61,15 +63,18 @@ class AppLogger {
       lineLength: 100,
       dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
     ),
-    level: kDebugMode ? Level.trace : Level.warning,
+    level: kDebugMode ? Level.trace : Level.off,
   );
 
   UnmodifiableListView<LogEntry> get entries =>
       UnmodifiableListView(_entries.toList());
 
-  List<LogEntry> get errors => _entries
-      .where((e) => e.level == LogLevel.error || e.level == LogLevel.warning)
-      .toList();
+  List<LogEntry> get errors =>
+      _entries
+          .where(
+            (e) => e.level == LogLevel.error || e.level == LogLevel.warning,
+          )
+          .toList();
 
   void addListener(VoidCallback listener) => _listeners.add(listener);
 
@@ -90,14 +95,13 @@ class AppLogger {
     String? details,
     Object? error,
     StackTrace? stackTrace,
-  }) =>
-      _log(
-        LogLevel.error,
-        tag,
-        message,
-        details: details ?? error?.toString(),
-        stackTrace: stackTrace,
-      );
+  }) => _log(
+    LogLevel.error,
+    tag,
+    message,
+    details: details ?? error?.toString(),
+    stackTrace: stackTrace,
+  );
 
   void api(String tag, String message, {String? details}) =>
       _log(LogLevel.api, tag, message, details: details);

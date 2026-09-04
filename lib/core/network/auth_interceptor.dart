@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:krishidnya/core/constants/app_constants.dart';
-import 'package:krishidnya/core/storage/secure_storage_service.dart';
+import 'package:cropdoc/core/constants/app_constants.dart';
+import 'package:cropdoc/core/storage/secure_storage_service.dart';
 
 /// Attaches authorization token to outgoing requests.
 class AuthInterceptor extends Interceptor {

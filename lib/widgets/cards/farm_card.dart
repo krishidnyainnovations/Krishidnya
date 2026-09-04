@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/widgets/common/app_logo.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/widgets/common/app_logo.dart';
 
 /// Farm status overview card.
 class FarmCard extends StatelessWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
 import 'package:shimmer/shimmer.dart';
 
 /// Shimmer loading placeholder for cards and lists.

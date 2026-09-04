@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:krishidnya/core/constants/app_constants.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
+import 'package:cropdoc/core/constants/app_constants.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
 
 /// Animated Krishidnya logo mark.
 class KrishidnyaLogo extends StatefulWidget {

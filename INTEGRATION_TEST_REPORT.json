@@ -1,0 +1,106 @@
+﻿{
+    "passed":  16,
+    "timestamp":  "2026-08-31 11:39:40",
+    "failed":  0,
+    "total_tests":  16,
+    "tests":  [
+                  {
+                      "passed":  true,
+                      "message":  "Service is healthy",
+                      "timestamp":  "11:39:40",
+                      "test":  "Health Check"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "User ID: 6",
+                      "timestamp":  "11:39:40",
+                      "test":  "User Registration"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Token received",
+                      "timestamp":  "11:39:41",
+                      "test":  "User Login"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Username: integration_user_1788176380",
+                      "timestamp":  "11:39:41",
+                      "test":  "Get User Profile"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Post ID: 4",
+                      "timestamp":  "11:39:41",
+                      "test":  "Create Post"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Retrieved 4 posts",
+                      "timestamp":  "11:39:41",
+                      "test":  "Get All Posts"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Author data included in post",
+                      "timestamp":  "11:39:41",
+                      "test":  "Post-Author Relationship"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Retrieved 0 products",
+                      "timestamp":  "11:39:41",
+                      "test":  "Get Marketplace Products"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Search returned 0 results",
+                      "timestamp":  "11:39:41",
+                      "test":  "Marketplace Search"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Retrieved 0 schemes",
+                      "timestamp":  "11:39:41",
+                      "test":  "Get Schemes List"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Pagination works: 0 schemes",
+                      "timestamp":  "11:39:41",
+                      "test":  "Schemes Pagination"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Properly rejected (exception caught)",
+                      "timestamp":  "11:39:41",
+                      "test":  "Invalid Credentials"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Rate limiting activated",
+                      "timestamp":  "11:39:41",
+                      "test":  "Rate Limiting"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Proper 404 response (exception caught)",
+                      "timestamp":  "11:39:41",
+                      "test":  "404 Handling"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "All 10 requests succeeded",
+                      "timestamp":  "11:39:42",
+                      "test":  "Concurrent Requests"
+                  },
+                  {
+                      "passed":  true,
+                      "message":  "Consistent JSON responses",
+                      "timestamp":  "11:39:42",
+                      "test":  "Response Format"
+                  }
+              ],
+    "success_rate":  100,
+    "base_url":  "http://localhost:8000"
+}

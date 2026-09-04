@@ -1,6 +1,6 @@
 /// Disease detection feature exports.
 library;
-export 'package:krishidnya/features/home/domain/entities/feature_models.dart'
+export 'package:cropdoc/features/home/domain/entities/feature_models.dart'
     show ScanCropResult;
-export 'package:krishidnya/features/home/presentation/screens/feature_screens.dart'
+export 'package:cropdoc/features/home/presentation/screens/feature_screens.dart'
     show ScanCropFeatureScreen;

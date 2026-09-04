@@ -6,20 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:krishidnya/core/errors/exception_mapper.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:krishidnya/features/home/data/home_repository.dart';
-import 'package:krishidnya/features/home/data/local_farm_storage.dart';
-import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
-import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
-import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
-import 'package:krishidnya/l10n/app_localizations.dart';
-import 'package:krishidnya/widgets/buttons/primary_button.dart';
-import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
-import 'package:krishidnya/widgets/feedback/empty_state_widget.dart';
-import 'package:krishidnya/widgets/inputs/app_text_field.dart';
+import 'package:cropdoc/core/errors/exception_mapper.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:cropdoc/features/home/data/home_repository.dart';
+import 'package:cropdoc/features/home/data/local_farm_storage.dart';
+import 'package:cropdoc/features/home/domain/entities/feature_models.dart';
+import 'package:cropdoc/features/home/domain/entities/home_entities.dart';
+import 'package:cropdoc/features/home/presentation/controllers/home_providers.dart';
+import 'package:cropdoc/l10n/app_localizations.dart';
+import 'package:cropdoc/widgets/buttons/primary_button.dart';
+import 'package:cropdoc/widgets/feedback/app_snackbar.dart';
+import 'package:cropdoc/widgets/feedback/empty_state_widget.dart';
+import 'package:cropdoc/widgets/inputs/app_text_field.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -63,10 +63,9 @@ class _CropRecommendationScreenState
     final area = double.tryParse(_areaController.text.trim()) ?? 1;
 
     if (user?.latitude != null && user?.longitude != null) {
-      final soilResult = await ref.read(homeRepositoryProvider).getSoilData(
-            latitude: user!.latitude!,
-            longitude: user.longitude!,
-          );
+      final soilResult = await ref
+          .read(homeRepositoryProvider)
+          .getSoilData(latitude: user!.latitude!, longitude: user.longitude!);
       if (soilResult case Success(:final data)) {
         _soilApiSummary = data.toString();
         final apiSoil = data['soil_type'] as String?;
@@ -80,25 +79,30 @@ class _CropRecommendationScreenState
           if (mounted) setState(() => _soilType = match);
         }
         final storage = await ref.read(localFarmStorageProvider.future);
-        await storage.addSoilHistory(SoilHistoryEntry(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          soilType: data['soil_type'] as String? ?? _soilType,
-          location: user.location ?? 'Farm',
-          summary: data.toString(),
-          createdAt: DateTime.now(),
-        ));
+        await storage.addSoilHistory(
+          SoilHistoryEntry(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            soilType: data['soil_type'] as String? ?? _soilType,
+            location: user.location ?? 'Farm',
+            summary: data.toString(),
+            createdAt: DateTime.now(),
+          ),
+        );
       }
     }
 
-    final result = await ref.read(homeRepositoryProvider).getCropRecommendations(
+    final result = await ref
+        .read(homeRepositoryProvider)
+        .getCropRecommendations(
           soilType: _soilType,
           season: _season,
           watering: _watering,
           area: area,
           location: user?.location ?? user?.city ?? 'India',
-          weatherSummary: weather != null
-              ? '${weather.temperature}, ${weather.condition}, humidity ${weather.humidity ?? "N/A"}'
-              : null,
+          weatherSummary:
+              weather != null
+                  ? '${weather.temperature}, ${weather.condition}, humidity ${weather.humidity ?? "N/A"}'
+                  : null,
           soilApiData: _soilApiSummary,
         );
 
@@ -111,13 +115,15 @@ class _CropRecommendationScreenState
           _results = data;
         });
         final storage = await ref.read(localFarmStorageProvider.future);
-        await storage.addHistory(HistoryEntry(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          type: 'recommendation',
-          title: 'Crop Recommendation — $_season',
-          summary: 'Soil: $_soilType, Area: ${area}ac, Water: $_watering',
-          createdAt: DateTime.now(),
-        ));
+        await storage.addHistory(
+          HistoryEntry(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            type: 'recommendation',
+            title: 'Crop Recommendation — $_season',
+            summary: 'Soil: $_soilType, Area: ${area}ac, Water: $_watering',
+            createdAt: DateTime.now(),
+          ),
+        );
         ref.invalidate(farmHistoryProvider);
       case ErrorResult(:final failure):
         setState(() => _loading = false);
@@ -176,7 +182,10 @@ class _CropRecommendationScreenState
             const SizedBox(height: AppSpacing.xl),
             _WeatherAnalysisCard(analysis: _results!.weatherAnalysis),
             const SizedBox(height: AppSpacing.lg),
-            Text(l10n.topCropPicks, style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              l10n.topCropPicks,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: AppSpacing.sm),
             ..._results!.crops.map((c) => _CropExpandableCard(crop: c)),
           ],
@@ -201,8 +210,10 @@ class _WeatherAnalysisCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.weatherAnalysis,
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              l10n.weatherAnalysis,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: AppSpacing.sm),
             _Row(l10n.temperature, analysis.temperature),
             _Row(l10n.humidity, analysis.humidity),
@@ -225,8 +236,16 @@ class _Row extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          SizedBox(width: 120, child: Text(label, style: Theme.of(context).textTheme.bodySmall)),
-          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600))),
+          SizedBox(
+            width: 120,
+            child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );
@@ -248,7 +267,10 @@ class _CropExpandableCard extends StatelessWidget {
           backgroundColor: AppColors.primaryContainer,
           child: Text(
             crop.name[0].toUpperCase(),
-            style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         title: Text(crop.name),
@@ -289,7 +311,12 @@ class _DetailRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.primary)),
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: AppColors.primary),
+          ),
           Text(value.toString()),
         ],
       ),
@@ -319,7 +346,10 @@ class _DropdownField extends StatelessWidget {
         const SizedBox(height: AppSpacing.xs),
         DropdownButtonFormField<String>(
           initialValue: value,
-          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          items:
+              items
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
           onChanged: onChanged,
           decoration: const InputDecoration(
             filled: true,
@@ -356,7 +386,9 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
       _imagePath = picked.path;
     });
 
-    final scanResult = await ref.read(homeRepositoryProvider).scanCropImage(picked.path);
+    final scanResult = await ref
+        .read(homeRepositoryProvider)
+        .scanCropImage(picked.path);
 
     if (!mounted) return;
 
@@ -368,13 +400,16 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
           _result = parsed;
         });
         final storage = await ref.read(localFarmStorageProvider.future);
-        await storage.addHistory(HistoryEntry(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          type: 'scan',
-          title: parsed.disease,
-          summary: parsed.organicCure ?? parsed.chemicalCure ?? 'Scan completed',
-          createdAt: DateTime.now(),
-        ));
+        await storage.addHistory(
+          HistoryEntry(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            type: 'scan',
+            title: parsed.disease,
+            summary:
+                parsed.organicCure ?? parsed.chemicalCure ?? 'Scan completed',
+            createdAt: DateTime.now(),
+          ),
+        );
         ref.invalidate(farmHistoryProvider);
       case ErrorResult(:final failure):
         setState(() => _loading = false);
@@ -424,14 +459,15 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
           ],
         ],
       ),
-      floatingActionButton: _loading
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: () => _showSourcePicker(context),
-              backgroundColor: AppColors.primary,
-              icon: const Icon(Icons.camera_alt_rounded),
-              label: Text(l10n.takePhoto),
-            ),
+      floatingActionButton:
+          _loading
+              ? null
+              : FloatingActionButton.extended(
+                onPressed: () => _showSourcePicker(context),
+                backgroundColor: AppColors.primary,
+                icon: const Icon(Icons.camera_alt_rounded),
+                label: Text(l10n.takePhoto),
+              ),
     );
   }
 
@@ -440,29 +476,30 @@ class _ScanCropFeatureScreenState extends ConsumerState<ScanCropFeatureScreen> {
 
     showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: Text(l10n.camera),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickAndScan(ImageSource.camera);
-              },
+      builder:
+          (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: Text(l10n.camera),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _pickAndScan(ImageSource.camera);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: Text(l10n.gallery),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _pickAndScan(ImageSource.gallery);
+                  },
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: Text(l10n.gallery),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickAndScan(ImageSource.gallery);
-              },
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 }
@@ -478,46 +515,475 @@ class _ScanResultCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Card(
-          color: AppColors.error.withValues(alpha: 0.08),
-          child: ListTile(
-            leading: const Icon(Icons.warning_amber_rounded, color: AppColors.error),
-            title: Text(result.disease, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: result.confidence != null
-                ? Text(l10n.confidenceLabel(result.confidence!))
-                : null,
+        // Plant Information
+        if (result.plantName != null || result.plantType != null) ...[
+          Card(
+            color: AppColors.primaryContainer.withValues(alpha: 0.3),
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (result.plantName != null)
+                    Text(
+                      result.plantName!,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  if (result.plantType != null)
+                    Text(
+                      result.plantType!,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Health Status
+        if (result.healthStatus != null) ...[
+          Card(
+            color:
+                result.healthStatus!.toLowerCase() == 'healthy'
+                    ? AppColors.primary.withValues(alpha: 0.08)
+                    : AppColors.error.withValues(alpha: 0.08),
+            child: ListTile(
+              leading: Icon(
+                result.healthStatus!.toLowerCase() == 'healthy'
+                    ? Icons.check_circle
+                    : Icons.warning_amber_rounded,
+                color:
+                    result.healthStatus!.toLowerCase() == 'healthy'
+                        ? AppColors.primary
+                        : AppColors.error,
+              ),
+              title: Text(
+                result.healthStatus!,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              subtitle:
+                  result.overallCondition != null
+                      ? Text(result.overallCondition!)
+                      : null,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Disease Information
+        if (result.diseaseDetected == true ||
+            result.disease != 'Analysis Result') ...[
+          Card(
+            color: AppColors.error.withValues(alpha: 0.08),
+            child: ListTile(
+              leading: const Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.error,
+              ),
+              title: Text(
+                result.disease,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (result.diseaseScientificName != null)
+                    Text(
+                      result.diseaseScientificName!,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  if (result.confidence != null)
+                    Text(l10n.confidenceLabel(result.confidence!)),
+                  if (result.severity != null)
+                    Text('Severity: ${result.severity}'),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Symptoms
+        if (result.symptoms != null && result.symptoms!.isNotEmpty) ...[
+          Card(
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Symptoms',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  ...result.symptoms!.map(
+                    (symptom) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '• ',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Expanded(child: Text(symptom)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Affected Parts
+        if (result.affectedParts != null &&
+            result.affectedParts!.isNotEmpty) ...[
+          Card(
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Affected Parts',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children:
+                        result.affectedParts!
+                            .map(
+                              (part) => Chip(
+                                label: Text(part),
+                                backgroundColor: AppColors.secondaryContainer,
+                              ),
+                            )
+                            .toList(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Organic Treatment
         if (result.organicCure != null) ...[
-          const SizedBox(height: AppSpacing.md),
           _CureCard(
             title: l10n.organicCureRecommended,
-            content: result.dosage != null
-                ? '${result.organicCure}\n\n${l10n.dosageLabel}: ${result.dosage}'
-                : result.organicCure!,
+            content: result.organicCure!,
             color: AppColors.primary,
             icon: Icons.eco,
+            effectiveness: result.organicEffectiveness,
           ),
-        ],
-        if (result.chemicalCure != null) ...[
+          if (result.homeRemedies != null &&
+              result.homeRemedies!.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Card(
+              child: Padding(
+                padding: AppSpacing.cardPadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Home Remedies',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    ...result.homeRemedies!.map(
+                      (remedy) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '• ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Expanded(child: Text(remedy)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Chemical Treatment
+        if (result.chemicalCure != null) ...[
           _CureCard(
             title: l10n.chemicalCure,
             content: result.chemicalCure!,
             color: AppColors.accent,
             icon: Icons.science_outlined,
+            effectiveness: result.chemicalEffectiveness,
           ),
-        ],
-        if (result.products != null) ...[
+          if (result.dosage != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Card(
+              child: Padding(
+                padding: AppSpacing.cardPadding,
+                child: Text(
+                  '${l10n.dosageLabel}: ${result.dosage}',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.sm),
-          _CureCard(
-            title: l10n.recommendedProducts,
-            content: result.products!,
-            color: AppColors.secondary,
-            icon: Icons.shopping_bag_outlined,
-          ),
         ],
-        if (result.organicCure == null && result.chemicalCure == null)
+
+        // Recommended Products
+        if (result.recommendedProducts != null &&
+            result.recommendedProducts!.isNotEmpty) ...[
+          Card(
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.recommendedProducts,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  ...result.recommendedProducts!.map(
+                    (product) => ListTile(
+                      dense: true,
+                      title: Text(product.name),
+                      subtitle:
+                          product.dosage != null
+                              ? Text('${l10n.dosageLabel}: ${product.dosage}')
+                              : null,
+                      trailing:
+                          product.confidence != null
+                              ? Text(
+                                '${l10n.confidenceLabel(product.confidence!.toStringAsFixed(0))}%',
+                                style: Theme.of(context).textTheme.labelSmall,
+                              )
+                              : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Prevention
+        if (result.prevention != null && result.prevention!.isNotEmpty) ...[
+          Card(
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Prevention',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  ...result.prevention!.map(
+                    (method) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '• ',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Expanded(child: Text(method)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Cultural Practices
+        if (result.culturalPractices != null &&
+            result.culturalPractices!.isNotEmpty) ...[
+          Card(
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Cultural Practices',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  ...result.culturalPractices!.map(
+                    (practice) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '• ',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Expanded(child: Text(practice)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Crop Rotation
+        if (result.cropRotation != null) ...[
+          Card(
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Crop Rotation',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(result.cropRotation!),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Resistant Varieties
+        if (result.resistantVarieties != null &&
+            result.resistantVarieties!.isNotEmpty) ...[
+          Card(
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Resistant Varieties',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children:
+                        result.resistantVarieties!
+                            .map(
+                              (variety) => Chip(
+                                label: Text(variety),
+                                backgroundColor: AppColors.primaryContainer,
+                              ),
+                            )
+                            .toList(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Economic Impact
+        if (result.economicImpact != null) ...[
+          Card(
+            color: AppColors.secondaryContainer.withValues(alpha: 0.3),
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Economic Impact',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(result.economicImpact!),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Spread Risk
+        if (result.spreadRisk != null) ...[
+          Card(
+            color: AppColors.error.withValues(alpha: 0.05),
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Spread Risk',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(result.spreadRisk!),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Additional Notes
+        if (result.additionalNotes != null) ...[
+          Card(
+            child: Padding(
+              padding: AppSpacing.cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Additional Notes',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(result.additionalNotes!),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+
+        // Fallback for raw data if no structured data
+        if (result.organicCure == null &&
+            result.chemicalCure == null &&
+            result.disease == 'Analysis Result')
           Card(
             child: Padding(
               padding: AppSpacing.cardPadding,
@@ -535,12 +1001,14 @@ class _CureCard extends StatelessWidget {
     required this.content,
     required this.color,
     required this.icon,
+    this.effectiveness,
   });
 
   final String title;
   final String content;
   final Color color;
   final IconData icon;
+  final String? effectiveness;
 
   @override
   Widget build(BuildContext context) {
@@ -554,7 +1022,30 @@ class _CureCard extends StatelessWidget {
               children: [
                 Icon(icon, color: color, size: 20),
                 const SizedBox(width: AppSpacing.xs),
-                Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: color)),
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.w700, color: color),
+                ),
+                if (effectiveness != null) ...[
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      effectiveness!,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -611,10 +1102,9 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
     final crop = _commodityController.text.trim();
     final mandiPrefs = await ref.read(mandiPreferencesProvider.future);
     await mandiPrefs.addRecent(crop);
-    final result = await ref.read(homeRepositoryProvider).getMandiPrices(
-          commodity: crop,
-          state: _stateController.text.trim(),
-        );
+    final result = await ref
+        .read(homeRepositoryProvider)
+        .getMandiPrices(commodity: crop, state: _stateController.text.trim());
     if (!mounted) return;
     setState(() {
       _loading = false;
@@ -639,19 +1129,23 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
           AppTextField(label: l10n.stateLabel, controller: _stateController),
           if (_favorites.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
-            Text(l10n.favorites, style: Theme.of(context).textTheme.labelMedium),
+            Text(
+              l10n.favorites,
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
             const SizedBox(height: AppSpacing.xs),
             Wrap(
               spacing: AppSpacing.xs,
-              children: _favorites.map((f) {
-                return ActionChip(
-                  label: Text(f),
-                  onPressed: () {
-                    _commodityController.text = f;
-                    _fetch();
-                  },
-                );
-              }).toList(),
+              children:
+                  _favorites.map((f) {
+                    return ActionChip(
+                      label: Text(f),
+                      onPressed: () {
+                        _commodityController.text = f;
+                        _fetch();
+                      },
+                    );
+                  }).toList(),
             ),
           ],
           if (_recent.where((r) => !_favorites.contains(r)).isNotEmpty) ...[
@@ -660,16 +1154,17 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
             const SizedBox(height: AppSpacing.xs),
             Wrap(
               spacing: AppSpacing.xs,
-              children: _recent.where((r) => !_favorites.contains(r)).map((r) {
-                return ActionChip(
-                  label: Text(r),
-                  avatar: const Icon(Icons.history, size: 16),
-                  onPressed: () {
-                    _commodityController.text = r;
-                    _fetch();
-                  },
-                );
-              }).toList(),
+              children:
+                  _recent.where((r) => !_favorites.contains(r)).map((r) {
+                    return ActionChip(
+                      label: Text(r),
+                      avatar: const Icon(Icons.history, size: 16),
+                      onPressed: () {
+                        _commodityController.text = r;
+                        _fetch();
+                      },
+                    );
+                  }).toList(),
             ),
           ],
           const SizedBox(height: AppSpacing.lg),
@@ -681,7 +1176,9 @@ class _MandiPricesScreenState extends ConsumerState<MandiPricesScreen> {
           const SizedBox(height: AppSpacing.sm),
           TextButton(
             onPressed: () async {
-              final mandiPrefs = await ref.read(mandiPreferencesProvider.future);
+              final mandiPrefs = await ref.read(
+                mandiPreferencesProvider.future,
+              );
               await mandiPrefs.addFavorite(_commodityController.text.trim());
               setState(() => _favorites = mandiPrefs.getFavorites());
               if (context.mounted) {
@@ -728,36 +1225,46 @@ class _MandiPricesList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.todaysMarketRates,
-            style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          l10n.todaysMarketRates,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: AppSpacing.sm),
-        ...records.take(20).map((r) => Card(
-              margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: ListTile(
-                title: Text('${r['market'] ?? r['district'] ?? l10n.marketLabel}'),
-                subtitle: Text(
-                  '${r['commodity'] ?? ''} · ${r['variety'] ?? ''}',
-                ),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '₹${r['modal_price'] ?? r['price'] ?? '—'}',
-                      style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary),
-                    ),
-                    Text(
-                      r['unit']?.toString() ?? '/quintal',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
+        ...records
+            .take(20)
+            .map(
+              (r) => Card(
+                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: ListTile(
+                  title: Text(
+                    '${r['market'] ?? r['district'] ?? l10n.marketLabel}',
+                  ),
+                  subtitle: Text(
+                    '${r['commodity'] ?? ''} · ${r['variety'] ?? ''}',
+                  ),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '₹${r['modal_price'] ?? r['price'] ?? '—'}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      Text(
+                        r['unit']?.toString() ?? '/quintal',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            )),
+            ),
       ],
     );
   }
-
 }
 
 /// Marketplace — farmer-to-farmer trading.
@@ -780,68 +1287,95 @@ class MarketplaceScreen extends ConsumerWidget {
         ],
       ),
       body: productsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (e, _) => EmptyStateWidget(
-          title: 'Marketplace',
-          subtitle: 'Rent machinery, sell livestock, trade with farmers nearby.',
-          icon: Icons.storefront_outlined,
-          action: PrimaryButton(
-            label: 'List Item',
-            onPressed: () => _showListDialog(context, ref),
-          ),
-        ),
-        data: (products) => products.isEmpty
-            ? EmptyStateWidget(
-                title: 'No listings yet',
-                subtitle: 'Be the first to list tractors, seeds, or livestock.',
-                icon: Icons.storefront_outlined,
-                action: PrimaryButton(
-                  label: 'List Item',
-                  onPressed: () => _showListDialog(context, ref),
-                ),
-              )
-            : RefreshIndicator(
-                onRefresh: () async => ref.invalidate(productsProvider),
-                child: ListView.separated(
-                  padding: AppSpacing.screenPadding,
-                  itemCount: products.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-                  itemBuilder: (context, i) {
-                    final p = products[i];
-                    return Card(
-                      child: ListTile(
-                        onTap: () => _showProductDetail(context, ref, p),
-                        leading: p.imageUrl != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: CachedNetworkImage(
-                                  imageUrl: p.imageUrl!,
-                                  width: 48,
-                                  height: 48,
-                                  fit: BoxFit.cover,
-                                  placeholder: (_, __) => CircleAvatar(
-                                    backgroundColor: AppColors.primaryContainer,
-                                    child: Text(p.category[0].toUpperCase()),
-                                  ),
-                                  errorWidget: (_, __, ___) => CircleAvatar(
-                                    backgroundColor: AppColors.primaryContainer,
-                                    child: Text(p.category[0].toUpperCase()),
-                                  ),
-                                ),
-                              )
-                            : CircleAvatar(
-                                backgroundColor: AppColors.primaryContainer,
-                                child: Text(p.category[0].toUpperCase()),
-                              ),
-                        title: Text(p.name),
-                        subtitle: Text('${p.category}${p.description != null ? ' · ${p.description}' : ''}'),
-                        trailing: Text('₹${p.price.toStringAsFixed(0)}/${p.unit}',
-                            style: const TextStyle(fontWeight: FontWeight.w600)),
-                      ),
-                    );
-                  },
-                ),
+        loading:
+            () => const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+        error:
+            (e, _) => EmptyStateWidget(
+              title: 'Marketplace',
+              subtitle:
+                  'Rent machinery, sell livestock, trade with farmers nearby.',
+              icon: Icons.storefront_outlined,
+              action: PrimaryButton(
+                label: 'List Item',
+                onPressed: () => _showListDialog(context, ref),
               ),
+            ),
+        data:
+            (products) =>
+                products.isEmpty
+                    ? EmptyStateWidget(
+                      title: 'No listings yet',
+                      subtitle:
+                          'Be the first to list tractors, seeds, or livestock.',
+                      icon: Icons.storefront_outlined,
+                      action: PrimaryButton(
+                        label: 'List Item',
+                        onPressed: () => _showListDialog(context, ref),
+                      ),
+                    )
+                    : RefreshIndicator(
+                      onRefresh: () async => ref.invalidate(productsProvider),
+                      child: ListView.separated(
+                        padding: AppSpacing.screenPadding,
+                        itemCount: products.length,
+                        separatorBuilder:
+                            (_, __) => const SizedBox(height: AppSpacing.sm),
+                        itemBuilder: (context, i) {
+                          final p = products[i];
+                          return Card(
+                            child: ListTile(
+                              onTap: () => _showProductDetail(context, ref, p),
+                              leading:
+                                  p.imageUrl != null
+                                      ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: CachedNetworkImage(
+                                          imageUrl: p.imageUrl!,
+                                          width: 48,
+                                          height: 48,
+                                          fit: BoxFit.cover,
+                                          placeholder:
+                                              (_, __) => CircleAvatar(
+                                                backgroundColor:
+                                                    AppColors.primaryContainer,
+                                                child: Text(
+                                                  p.category[0].toUpperCase(),
+                                                ),
+                                              ),
+                                          errorWidget:
+                                              (_, __, ___) => CircleAvatar(
+                                                backgroundColor:
+                                                    AppColors.primaryContainer,
+                                                child: Text(
+                                                  p.category[0].toUpperCase(),
+                                                ),
+                                              ),
+                                        ),
+                                      )
+                                      : CircleAvatar(
+                                        backgroundColor:
+                                            AppColors.primaryContainer,
+                                        child: Text(
+                                          p.category[0].toUpperCase(),
+                                        ),
+                                      ),
+                              title: Text(p.name),
+                              subtitle: Text(
+                                '${p.category}${p.description != null ? ' · ${p.description}' : ''}',
+                              ),
+                              trailing: Text(
+                                '₹${p.price.toStringAsFixed(0)}/${p.unit}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
       ),
     );
   }
@@ -852,46 +1386,54 @@ class MarketplaceScreen extends ConsumerWidget {
 
     showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => Padding(
-        padding: AppSpacing.screenPadding,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (p.imageUrl != null)
-              ClipRRect(
-                borderRadius: AppSpacing.cardRadius,
-                child: CachedNetworkImage(
-                  imageUrl: p.imageUrl!,
-                  height: 160,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+      builder:
+          (ctx) => Padding(
+            padding: AppSpacing.screenPadding,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (p.imageUrl != null)
+                  ClipRRect(
+                    borderRadius: AppSpacing.cardRadius,
+                    child: CachedNetworkImage(
+                      imageUrl: p.imageUrl!,
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                if (p.imageUrl != null) const SizedBox(height: AppSpacing.md),
+                Text(p.name, style: Theme.of(ctx).textTheme.titleLarge),
+                Text(
+                  '${p.category} · ₹${p.price.toStringAsFixed(0)}/${p.unit}',
                 ),
-              ),
-            if (p.imageUrl != null) const SizedBox(height: AppSpacing.md),
-            Text(p.name, style: Theme.of(ctx).textTheme.titleLarge),
-            Text('${p.category} · ₹${p.price.toStringAsFixed(0)}/${p.unit}'),
-            if (p.description != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text(p.description!),
-            ],
-            const SizedBox(height: AppSpacing.lg),
-            PrimaryButton(
-              label: phone != null ? 'Contact Seller' : 'No contact available',
-              onPressed: phone == null
-                  ? null
-                  : () async {
-                      final uri = Uri.parse('tel:$phone');
-                      if (await canLaunchUrl(uri)) {
-                        await launchUrl(uri);
-                      } else if (ctx.mounted) {
-                        AppSnackBar.error(ctx, 'Could not open phone dialer');
-                      }
-                    },
+                if (p.description != null) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(p.description!),
+                ],
+                const SizedBox(height: AppSpacing.lg),
+                PrimaryButton(
+                  label:
+                      phone != null ? 'Contact Seller' : 'No contact available',
+                  onPressed:
+                      phone == null
+                          ? null
+                          : () async {
+                            final uri = Uri.parse('tel:$phone');
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri);
+                            } else if (ctx.mounted) {
+                              AppSnackBar.error(
+                                ctx,
+                                'Could not open phone dialer',
+                              );
+                            }
+                          },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -907,75 +1449,107 @@ class MarketplaceScreen extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          top: AppSpacing.lg,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
-        ),
-        child: StatefulBuilder(
-          builder: (ctx, setState) => Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('List an Item', style: Theme.of(ctx).textTheme.titleLarge),
-            const SizedBox(height: AppSpacing.md),
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'rent', label: Text('Rent')),
-                ButtonSegment(value: 'sell', label: Text('Sell')),
-              ],
-              selected: {listingType},
-              onSelectionChanged: (v) => setState(() => listingType = v.first),
+      builder:
+          (ctx) => Padding(
+            padding: EdgeInsets.only(
+              left: AppSpacing.lg,
+              right: AppSpacing.lg,
+              top: AppSpacing.lg,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
             ),
-            const SizedBox(height: AppSpacing.md),
-            AppTextField(label: 'Item Name', controller: nameCtrl),
-            const SizedBox(height: AppSpacing.sm),
-            AppTextField(label: 'Category (Machinery, Livestock, Seeds...)', controller: categoryCtrl),
-            const SizedBox(height: AppSpacing.sm),
-            AppTextField(label: 'Price', controller: priceCtrl, keyboardType: TextInputType.number),
-            const SizedBox(height: AppSpacing.sm),
-            AppTextField(label: 'Unit (day, kg, piece)', controller: unitCtrl),
-            const SizedBox(height: AppSpacing.sm),
-            AppTextField(label: 'Contact Phone', controller: phoneCtrl, keyboardType: TextInputType.phone),
-            const SizedBox(height: AppSpacing.sm),
-            AppTextField(label: 'Description', controller: descCtrl),
-            const SizedBox(height: AppSpacing.lg),
-            PrimaryButton(
-              label: 'List Item',
-              onPressed: () async {
-                final price = double.tryParse(priceCtrl.text.trim());
-                if (nameCtrl.text.isEmpty || price == null) {
-                  AppSnackBar.error(ctx, 'Enter name and price');
-                  return;
-                }
-                final user = ref.read(currentUserProvider).valueOrNull;
-                final result = await ref.read(homeRepositoryProvider).createProduct(
-                      name: nameCtrl.text.trim(),
-                      category: categoryCtrl.text.trim(),
-                      price: price,
-                      unit: unitCtrl.text.trim(),
-                      description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
-                      listingType: listingType,
-                      state: user?.state,
-                      contactPhone: phoneCtrl.text.trim().isEmpty ? user?.mobile : phoneCtrl.text.trim(),
-                    );
-                if (!ctx.mounted) return;
-                switch (result) {
-                  case Success():
-                    Navigator.pop(ctx);
-                    ref.invalidate(productsProvider);
-                    AppSnackBar.success(context, 'Item listed successfully!');
-                  case ErrorResult(:final failure):
-                    AppSnackBar.error(context, failure.message);
-                }
-              },
+            child: StatefulBuilder(
+              builder:
+                  (ctx, setState) => Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'List an Item',
+                        style: Theme.of(ctx).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(value: 'rent', label: Text('Rent')),
+                          ButtonSegment(value: 'sell', label: Text('Sell')),
+                        ],
+                        selected: {listingType},
+                        onSelectionChanged:
+                            (v) => setState(() => listingType = v.first),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppTextField(label: 'Item Name', controller: nameCtrl),
+                      const SizedBox(height: AppSpacing.sm),
+                      AppTextField(
+                        label: 'Category (Machinery, Livestock, Seeds...)',
+                        controller: categoryCtrl,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      AppTextField(
+                        label: 'Price',
+                        controller: priceCtrl,
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      AppTextField(
+                        label: 'Unit (day, kg, piece)',
+                        controller: unitCtrl,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      AppTextField(
+                        label: 'Contact Phone',
+                        controller: phoneCtrl,
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      AppTextField(label: 'Description', controller: descCtrl),
+                      const SizedBox(height: AppSpacing.lg),
+                      PrimaryButton(
+                        label: 'List Item',
+                        onPressed: () async {
+                          final price = double.tryParse(priceCtrl.text.trim());
+                          if (nameCtrl.text.isEmpty || price == null) {
+                            AppSnackBar.error(ctx, 'Enter name and price');
+                            return;
+                          }
+                          final user =
+                              ref.read(currentUserProvider).valueOrNull;
+                          final result = await ref
+                              .read(homeRepositoryProvider)
+                              .createProduct(
+                                name: nameCtrl.text.trim(),
+                                category: categoryCtrl.text.trim(),
+                                price: price,
+                                unit: unitCtrl.text.trim(),
+                                description:
+                                    descCtrl.text.trim().isEmpty
+                                        ? null
+                                        : descCtrl.text.trim(),
+                                listingType: listingType,
+                                state: user?.state,
+                                contactPhone:
+                                    phoneCtrl.text.trim().isEmpty
+                                        ? user?.mobile
+                                        : phoneCtrl.text.trim(),
+                              );
+                          if (!ctx.mounted) return;
+                          switch (result) {
+                            case Success():
+                              Navigator.pop(ctx);
+                              ref.invalidate(productsProvider);
+                              AppSnackBar.success(
+                                context,
+                                'Item listed successfully!',
+                              );
+                            case ErrorResult(:final failure):
+                              AppSnackBar.error(context, failure.message);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
             ),
-          ],
-        ),
-        ),
-      ),
+          ),
     );
   }
 }
@@ -997,50 +1571,66 @@ class HistoryScreen extends ConsumerWidget {
             tooltip: 'Export',
             onPressed: () async {
               final storage = await ref.read(localFarmStorageProvider.future);
-              await Share.share(storage.exportHistoryCsv(), subject: 'Krishidnya Farm History');
+              await Share.share(
+                storage.exportHistoryCsv(),
+                subject: 'Krishidnya Farm History',
+              );
             },
           ),
         ],
       ),
       body: historyAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (_, __) => const EmptyStateWidget(
-          title: 'Your farm history',
-          subtitle: 'Past crop scans, soil tests, and recommendations appear here.',
-          icon: Icons.history_rounded,
-        ),
-        data: (entries) => entries.isEmpty
-            ? const EmptyStateWidget(
-                title: 'No history yet',
-                subtitle: 'Scan crops or get recommendations to build your history.',
-                icon: Icons.history_rounded,
-              )
-            : ListView.separated(
-                padding: AppSpacing.screenPadding,
-                itemCount: entries.length,
-                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, i) {
-                  final e = entries[i];
-                  return Card(
-                    child: ListTile(
-                      leading: Icon(
-                        e.type == 'scan'
-                            ? Icons.document_scanner_outlined
-                            : e.type == 'soil'
-                                ? Icons.grass_outlined
-                                : Icons.eco_rounded,
-                        color: AppColors.primary,
-                      ),
-                      title: Text(e.title),
-                      subtitle: Text(e.summary, maxLines: 2, overflow: TextOverflow.ellipsis),
-                      trailing: Text(
-                        DateFormat('d MMM').format(e.createdAt),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+        loading:
+            () => const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+        error:
+            (_, __) => const EmptyStateWidget(
+              title: 'Your farm history',
+              subtitle:
+                  'Past crop scans, soil tests, and recommendations appear here.',
+              icon: Icons.history_rounded,
+            ),
+        data:
+            (entries) =>
+                entries.isEmpty
+                    ? const EmptyStateWidget(
+                      title: 'No history yet',
+                      subtitle:
+                          'Scan crops or get recommendations to build your history.',
+                      icon: Icons.history_rounded,
+                    )
+                    : ListView.separated(
+                      padding: AppSpacing.screenPadding,
+                      itemCount: entries.length,
+                      separatorBuilder:
+                          (_, __) => const SizedBox(height: AppSpacing.sm),
+                      itemBuilder: (context, i) {
+                        final e = entries[i];
+                        return Card(
+                          child: ListTile(
+                            leading: Icon(
+                              e.type == 'scan'
+                                  ? Icons.document_scanner_outlined
+                                  : e.type == 'soil'
+                                  ? Icons.grass_outlined
+                                  : Icons.eco_rounded,
+                              color: AppColors.primary,
+                            ),
+                            title: Text(e.title),
+                            subtitle: Text(
+                              e.summary,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: Text(
+                              DateFormat('d MMM').format(e.createdAt),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
       ),
     );
   }
@@ -1082,65 +1672,80 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         ],
       ),
       body: cropsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (_, __) => const EmptyStateWidget(
-          title: 'Your digital farm notebook',
-          subtitle: 'Track sowing, fertilizers, labour, spraying, and harvest costs.',
-          icon: Icons.analytics_outlined,
-        ),
-        data: (crops) => crops.isEmpty
-            ? EmptyStateWidget(
-                title: 'Your digital farm notebook',
-                subtitle:
-                    'Track sowing, fertilizers, labour, spraying, and harvest costs. '
-                    'Auto-calculate profit and margins per crop.',
-                icon: Icons.analytics_outlined,
-                action: PrimaryButton(
-                  label: 'Add Crop',
-                  onPressed: () => _showAddCropDialog(context),
-                ),
-              )
-            : ListView(
-                padding: AppSpacing.screenPadding,
-                children: [
-                  monthlyIncomeAsync.when(
-                    data: (income) => Card(
-                      color: AppColors.primaryContainer.withValues(alpha: 0.3),
-                      child: ListTile(
-                        title: const Text('Monthly Income'),
-                        subtitle: const Text('This month from harvested crops'),
-                        trailing: Text(
-                          '₹${income.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
-                            color: AppColors.primary,
-                          ),
+        loading:
+            () => const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+        error:
+            (_, __) => const EmptyStateWidget(
+              title: 'Your digital farm notebook',
+              subtitle:
+                  'Track sowing, fertilizers, labour, spraying, and harvest costs.',
+              icon: Icons.analytics_outlined,
+            ),
+        data:
+            (crops) =>
+                crops.isEmpty
+                    ? EmptyStateWidget(
+                      title: 'Your digital farm notebook',
+                      subtitle:
+                          'Track sowing, fertilizers, labour, spraying, and harvest costs. '
+                          'Auto-calculate profit and margins per crop.',
+                      icon: Icons.analytics_outlined,
+                      action: PrimaryButton(
+                        label: 'Add Crop',
+                        onPressed: () => _showAddCropDialog(context),
+                      ),
+                    )
+                    : ListView(
+                      padding: AppSpacing.screenPadding,
+                      children: [
+                        monthlyIncomeAsync.when(
+                          data:
+                              (income) => Card(
+                                color: AppColors.primaryContainer.withValues(
+                                  alpha: 0.3,
+                                ),
+                                child: ListTile(
+                                  title: const Text('Monthly Income'),
+                                  subtitle: const Text(
+                                    'This month from harvested crops',
+                                  ),
+                                  trailing: Text(
+                                    '₹${income.toStringAsFixed(0)}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 18,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
                         ),
-                      ),
+                        const SizedBox(height: AppSpacing.md),
+                        ...List.generate(crops.length, (i) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: AppSpacing.sm,
+                            ),
+                            child: _CropAnalyticsCard(
+                              crop: crops[i],
+                              onTap: () => _showCropDetail(context, crops[i]),
+                              onDelete: () async {
+                                final storage = await ref.read(
+                                  localFarmStorageProvider.future,
+                                );
+                                await storage.deleteCrop(crops[i].id);
+                                ref.invalidate(farmCropsProvider);
+                                ref.invalidate(monthlyIncomeProvider);
+                              },
+                            ),
+                          );
+                        }),
+                      ],
                     ),
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  ...List.generate(crops.length, (i) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      child: _CropAnalyticsCard(
-                        crop: crops[i],
-                        onTap: () => _showCropDetail(context, crops[i]),
-                        onDelete: () async {
-                          final storage =
-                              await ref.read(localFarmStorageProvider.future);
-                          await storage.deleteCrop(crops[i].id);
-                          ref.invalidate(farmCropsProvider);
-                          ref.invalidate(monthlyIncomeProvider);
-                        },
-                      ),
-                    );
-                  }),
-                ],
-              ),
       ),
     );
   }
@@ -1155,55 +1760,65 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          top: AppSpacing.lg,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Add Crop', style: Theme.of(ctx).textTheme.titleLarge),
-            const SizedBox(height: AppSpacing.md),
-            AppTextField(label: 'Crop Name', controller: nameCtrl),
-            const SizedBox(height: AppSpacing.sm),
-            AppTextField(label: 'Area (acres)', controller: areaCtrl, keyboardType: TextInputType.number),
-            const SizedBox(height: AppSpacing.sm),
-            AppTextField(label: 'Sowing Date (YYYY-MM-DD)', controller: dateCtrl),
-            const SizedBox(height: AppSpacing.lg),
-            PrimaryButton(
-              label: 'Add Crop',
-              onPressed: () async {
-                final area = double.tryParse(areaCtrl.text.trim()) ?? 1;
-                if (nameCtrl.text.isEmpty) {
-                  AppSnackBar.error(ctx, 'Enter crop name');
-                  return;
-                }
-                final storage = await ref.read(localFarmStorageProvider.future);
-                await storage.addCrop(FarmCrop(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  name: nameCtrl.text.trim(),
-                  area: area,
-                  sowingDate: dateCtrl.text.trim(),
-                ));
-                ref.invalidate(farmCropsProvider);
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
+      builder:
+          (ctx) => Padding(
+            padding: EdgeInsets.only(
+              left: AppSpacing.lg,
+              right: AppSpacing.lg,
+              top: AppSpacing.lg,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
             ),
-          ],
-        ),
-      ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Add Crop', style: Theme.of(ctx).textTheme.titleLarge),
+                const SizedBox(height: AppSpacing.md),
+                AppTextField(label: 'Crop Name', controller: nameCtrl),
+                const SizedBox(height: AppSpacing.sm),
+                AppTextField(
+                  label: 'Area (acres)',
+                  controller: areaCtrl,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppTextField(
+                  label: 'Sowing Date (YYYY-MM-DD)',
+                  controller: dateCtrl,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                PrimaryButton(
+                  label: 'Add Crop',
+                  onPressed: () async {
+                    final area = double.tryParse(areaCtrl.text.trim()) ?? 1;
+                    if (nameCtrl.text.isEmpty) {
+                      AppSnackBar.error(ctx, 'Enter crop name');
+                      return;
+                    }
+                    final storage = await ref.read(
+                      localFarmStorageProvider.future,
+                    );
+                    await storage.addCrop(
+                      FarmCrop(
+                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                        name: nameCtrl.text.trim(),
+                        area: area,
+                        sowingDate: dateCtrl.text.trim(),
+                      ),
+                    );
+                    ref.invalidate(farmCropsProvider);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                ),
+              ],
+            ),
+          ),
     );
   }
 
   void _showCropDetail(BuildContext context, FarmCrop crop) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => _CropDetailScreen(crop: crop),
-      ),
+      MaterialPageRoute<void>(builder: (_) => _CropDetailScreen(crop: crop)),
     );
   }
 }
@@ -1236,13 +1851,18 @@ class _CropAnalyticsCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('₹${crop.totalExpenses.toStringAsFixed(0)}',
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(
+                  '₹${crop.totalExpenses.toStringAsFixed(0)}',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
                 if (crop.profit != null)
                   Text(
                     'Profit ₹${crop.profit!.toStringAsFixed(0)}',
                     style: TextStyle(
-                      color: crop.profit! >= 0 ? AppColors.primary : AppColors.error,
+                      color:
+                          crop.profit! >= 0
+                              ? AppColors.primary
+                              : AppColors.error,
                       fontSize: 12,
                     ),
                   ),
@@ -1287,52 +1907,62 @@ class _CropDetailScreenState extends ConsumerState<_CropDetailScreen> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          top: AppSpacing.lg,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Add Expense', style: Theme.of(ctx).textTheme.titleLarge),
-            const SizedBox(height: AppSpacing.md),
-            AppTextField(label: 'Type (Fertilizer, Labour, Spray, Cultivation)', controller: typeCtrl),
-            const SizedBox(height: AppSpacing.sm),
-            AppTextField(label: 'Description', controller: descCtrl),
-            const SizedBox(height: AppSpacing.sm),
-            AppTextField(label: 'Amount (₹)', controller: amountCtrl, keyboardType: TextInputType.number),
-            const SizedBox(height: AppSpacing.sm),
-            AppTextField(label: 'Date', controller: dateCtrl),
-            const SizedBox(height: AppSpacing.lg),
-            PrimaryButton(
-              label: 'Save Expense',
-              onPressed: () async {
-                final amount = double.tryParse(amountCtrl.text.trim()) ?? 0;
-                final updated = _crop.copyWith(
-                  expenses: [
-                    ..._crop.expenses,
-                    FarmExpense(
-                      type: typeCtrl.text.trim(),
-                      date: dateCtrl.text.trim(),
-                      description: descCtrl.text.trim(),
-                      amount: amount,
-                    ),
-                  ],
-                );
-                final storage = await ref.read(localFarmStorageProvider.future);
-                await storage.updateCrop(updated);
-                setState(() => _crop = updated);
-                ref.invalidate(farmCropsProvider);
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
+      builder:
+          (ctx) => Padding(
+            padding: EdgeInsets.only(
+              left: AppSpacing.lg,
+              right: AppSpacing.lg,
+              top: AppSpacing.lg,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
             ),
-          ],
-        ),
-      ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Add Expense', style: Theme.of(ctx).textTheme.titleLarge),
+                const SizedBox(height: AppSpacing.md),
+                AppTextField(
+                  label: 'Type (Fertilizer, Labour, Spray, Cultivation)',
+                  controller: typeCtrl,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppTextField(label: 'Description', controller: descCtrl),
+                const SizedBox(height: AppSpacing.sm),
+                AppTextField(
+                  label: 'Amount (₹)',
+                  controller: amountCtrl,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppTextField(label: 'Date', controller: dateCtrl),
+                const SizedBox(height: AppSpacing.lg),
+                PrimaryButton(
+                  label: 'Save Expense',
+                  onPressed: () async {
+                    final amount = double.tryParse(amountCtrl.text.trim()) ?? 0;
+                    final updated = _crop.copyWith(
+                      expenses: [
+                        ..._crop.expenses,
+                        FarmExpense(
+                          type: typeCtrl.text.trim(),
+                          date: dateCtrl.text.trim(),
+                          description: descCtrl.text.trim(),
+                          amount: amount,
+                        ),
+                      ],
+                    );
+                    final storage = await ref.read(
+                      localFarmStorageProvider.future,
+                    );
+                    await storage.updateCrop(updated);
+                    setState(() => _crop = updated);
+                    ref.invalidate(farmCropsProvider);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                ),
+              ],
+            ),
+          ),
     );
   }
 
@@ -1340,33 +1970,41 @@ class _CropDetailScreenState extends ConsumerState<_CropDetailScreen> {
     final sellCtrl = TextEditingController();
     await showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Record Harvest & Sale'),
-        content: AppTextField(
-          label: 'Total Selling Value (₹)',
-          controller: sellCtrl,
-          keyboardType: TextInputType.number,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              final value = double.tryParse(sellCtrl.text.trim());
-              if (value == null) return;
-              final updated = _crop.copyWith(
-                sellingValue: value,
-                harvestDate: DateFormat('yyyy-MM-dd').format(DateTime.now()),
-              );
-              final storage = await ref.read(localFarmStorageProvider.future);
-              await storage.updateCrop(updated);
-              setState(() => _crop = updated);
-              ref.invalidate(farmCropsProvider);
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: const Text('Save'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Record Harvest & Sale'),
+            content: AppTextField(
+              label: 'Total Selling Value (₹)',
+              controller: sellCtrl,
+              keyboardType: TextInputType.number,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final value = double.tryParse(sellCtrl.text.trim());
+                  if (value == null) return;
+                  final updated = _crop.copyWith(
+                    sellingValue: value,
+                    harvestDate: DateFormat(
+                      'yyyy-MM-dd',
+                    ).format(DateTime.now()),
+                  );
+                  final storage = await ref.read(
+                    localFarmStorageProvider.future,
+                  );
+                  await storage.updateCrop(updated);
+                  setState(() => _crop = updated);
+                  ref.invalidate(farmCropsProvider);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: const Text('Save'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -1389,12 +2027,24 @@ class _CropDetailScreenState extends ConsumerState<_CropDetailScreen> {
               padding: AppSpacing.cardPadding,
               child: Column(
                 children: [
-                  _SummaryRow('Total Expenses', '₹${_crop.totalExpenses.toStringAsFixed(0)}'),
+                  _SummaryRow(
+                    'Total Expenses',
+                    '₹${_crop.totalExpenses.toStringAsFixed(0)}',
+                  ),
                   if (_crop.sellingValue != null)
-                    _SummaryRow('Selling Value', '₹${_crop.sellingValue!.toStringAsFixed(0)}'),
+                    _SummaryRow(
+                      'Selling Value',
+                      '₹${_crop.sellingValue!.toStringAsFixed(0)}',
+                    ),
                   if (_crop.profit != null) ...[
-                    _SummaryRow('Profit', '₹${_crop.profit!.toStringAsFixed(0)}'),
-                    _SummaryRow('Margin', '${_crop.margin?.toStringAsFixed(1) ?? '—'}%'),
+                    _SummaryRow(
+                      'Profit',
+                      '₹${_crop.profit!.toStringAsFixed(0)}',
+                    ),
+                    _SummaryRow(
+                      'Margin',
+                      '${_crop.margin?.toStringAsFixed(1) ?? '—'}%',
+                    ),
                   ],
                 ],
               ),
@@ -1402,56 +2052,74 @@ class _CropDetailScreenState extends ConsumerState<_CropDetailScreen> {
           ),
           if (categories.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.lg),
-            Text('Expense Breakdown', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Expense Breakdown',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: AppSpacing.sm),
             SizedBox(
               height: 180,
               child: PieChart(
                 PieChartData(
-                  sections: categories.entries.map((e) {
-                    return PieChartSectionData(
-                      value: e.value,
-                      title: e.key,
-                      radius: 50,
-                      titleStyle: const TextStyle(fontSize: 10, color: Colors.white),
-                    );
-                  }).toList(),
+                  sections:
+                      categories.entries.map((e) {
+                        return PieChartSectionData(
+                          value: e.value,
+                          title: e.key,
+                          radius: 50,
+                          titleStyle: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.white,
+                          ),
+                        );
+                      }).toList(),
                 ),
               ),
             ),
           ],
           const SizedBox(height: AppSpacing.md),
           if (_crop.sellingValue == null)
-            PrimaryButton(label: 'Record Harvest & Sale', onPressed: _recordHarvest),
+            PrimaryButton(
+              label: 'Record Harvest & Sale',
+              onPressed: _recordHarvest,
+            ),
           const SizedBox(height: AppSpacing.lg),
           Text('Expenses', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.sm),
           if (_crop.expenses.isEmpty)
-            const Text('No expenses recorded yet. Tap Add Expense to log costs.')
+            const Text(
+              'No expenses recorded yet. Tap Add Expense to log costs.',
+            )
           else
             ..._crop.expenses.asMap().entries.map((entry) {
               final index = entry.key;
               final e = entry.value;
               return Card(
-                  margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: ListTile(
-                    title: Text('${e.type} — ₹${e.amount.toStringAsFixed(0)}'),
-                    subtitle: Text('${e.date} · ${e.description}'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline, color: AppColors.error),
-                      onPressed: () async {
-                        final updatedExpenses = List<FarmExpense>.from(_crop.expenses)
-                          ..removeAt(index);
-                        final updated = _crop.copyWith(expenses: updatedExpenses);
-                        final storage = await ref.read(localFarmStorageProvider.future);
-                        await storage.updateCrop(updated);
-                        setState(() => _crop = updated);
-                        ref.invalidate(farmCropsProvider);
-                        ref.invalidate(monthlyIncomeProvider);
-                      },
+                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: ListTile(
+                  title: Text('${e.type} — ₹${e.amount.toStringAsFixed(0)}'),
+                  subtitle: Text('${e.date} · ${e.description}'),
+                  trailing: IconButton(
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: AppColors.error,
                     ),
+                    onPressed: () async {
+                      final updatedExpenses = List<FarmExpense>.from(
+                        _crop.expenses,
+                      )..removeAt(index);
+                      final updated = _crop.copyWith(expenses: updatedExpenses);
+                      final storage = await ref.read(
+                        localFarmStorageProvider.future,
+                      );
+                      await storage.updateCrop(updated);
+                      setState(() => _crop = updated);
+                      ref.invalidate(farmCropsProvider);
+                      ref.invalidate(monthlyIncomeProvider);
+                    },
                   ),
-                );
+                ),
+              );
             }),
         ],
       ),

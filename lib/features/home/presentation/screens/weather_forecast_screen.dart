@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:krishidnya/core/routes/app_routes.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
-import 'package:krishidnya/l10n/app_localizations.dart';
-import 'package:krishidnya/widgets/cards/weather_card.dart';
+import 'package:cropdoc/core/routes/app_routes.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/features/home/presentation/controllers/home_providers.dart';
+import 'package:cropdoc/l10n/app_localizations.dart';
+import 'package:cropdoc/widgets/cards/weather_card.dart';
 
 /// 15-day weather forecast screen.
 class WeatherForecastScreen extends ConsumerWidget {

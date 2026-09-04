@@ -6,7 +6,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_gu.dart';
 import 'app_localizations_hi.dart';
+import 'app_localizations_mr.dart';
+import 'app_localizations_pa.dart';
+import 'app_localizations_ta.dart';
 
 // ignore_for_file: type=lint
 
@@ -95,13 +99,17 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('gu'),
     Locale('hi'),
+    Locale('mr'),
+    Locale('pa'),
+    Locale('ta'),
   ];
 
   /// Application name
   ///
   /// In en, this message translates to:
-  /// **'Krishidnya'**
+  /// **'CropDoc'**
   String get appName;
 
   /// No description provided for @appTagline.
@@ -149,7 +157,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingPage4Title.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Krishidnya'**
+  /// **'Welcome to CropDoc'**
   String get onboardingPage4Title;
 
   /// No description provided for @onboardingPage4Subtitle.
@@ -335,7 +343,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountCreatedSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Krishidnya. Let\'s begin your journey.'**
+  /// **'Welcome to CropDoc. Let\'s begin your journey.'**
   String get accountCreatedSubtitle;
 
   /// No description provided for @enterDashboard.
@@ -791,7 +799,7 @@ abstract class AppLocalizations {
   /// No description provided for @appVersion.
   ///
   /// In en, this message translates to:
-  /// **'Krishidnya v1.0.0'**
+  /// **'CropDoc v1.0.0'**
   String get appVersion;
 
   /// No description provided for @logOutConfirmTitle.
@@ -947,13 +955,13 @@ abstract class AppLocalizations {
   /// No description provided for @organicCureRecommended.
   ///
   /// In en, this message translates to:
-  /// **'Organic Cure (Recommended)'**
+  /// **'Organic Cure Recommended'**
   String get organicCureRecommended;
 
   /// No description provided for @chemicalCure.
   ///
   /// In en, this message translates to:
-  /// **'Chemical Cure'**
+  /// **'Chemical Treatment'**
   String get chemicalCure;
 
   /// No description provided for @recommendedProducts.
@@ -971,7 +979,7 @@ abstract class AppLocalizations {
   /// No description provided for @confidenceLabel.
   ///
   /// In en, this message translates to:
-  /// **'Confidence: {value}'**
+  /// **'Confidence: {value}%'**
   String confidenceLabel(String value);
 
   /// No description provided for @crop.
@@ -1561,6 +1569,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Harvest'**
   String get harvestShort;
+
+  /// No description provided for @clearChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Chat'**
+  String get clearChat;
+
+  /// No description provided for @howCanHelpFarmToday.
+  ///
+  /// In en, this message translates to:
+  /// **'How can I help your farm today?'**
+  String get howCanHelpFarmToday;
+
+  /// No description provided for @askAboutCropsWeatherDiseases.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about crops, weather, diseases, or government schemes.'**
+  String get askAboutCropsWeatherDiseases;
+
+  /// No description provided for @listening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening...'**
+  String get listening;
+
+  /// No description provided for @typeYourQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your question...'**
+  String get typeYourQuestion;
+
+  /// No description provided for @communityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get communityTitle;
+
+  /// No description provided for @farmerCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Farmer Community'**
+  String get farmerCommunity;
+
+  /// No description provided for @farmerCommunitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share crop updates, give advice, and connect with nearby farmers.'**
+  String get farmerCommunitySubtitle;
+
+  /// No description provided for @noPostsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No posts yet'**
+  String get noPostsYet;
+
+  /// No description provided for @noPostsYetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your first farm update with the community.'**
+  String get noPostsYetSubtitle;
+
+  /// No description provided for @shareUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Update'**
+  String get shareUpdate;
+
+  /// No description provided for @titleOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Title (optional)'**
+  String get titleOptional;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @whatsHappeningOnFarm.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s happening on your farm?'**
+  String get whatsHappeningOnFarm;
+
+  /// No description provided for @addPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Photo'**
+  String get addPhoto;
+
+  /// No description provided for @photoSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo Selected'**
+  String get photoSelected;
+
+  /// No description provided for @post.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get post;
+
+  /// No description provided for @writeSomethingToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Write something to share'**
+  String get writeSomethingToShare;
+
+  /// No description provided for @commentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get commentsTitle;
+
+  /// No description provided for @noCommentsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet. Be the first!'**
+  String get noCommentsYet;
+
+  /// No description provided for @addAComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment'**
+  String get addAComment;
+
+  /// No description provided for @postComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Post Comment'**
+  String get postComment;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileTitle;
+
+  /// No description provided for @krishidnyaAI.
+  ///
+  /// In en, this message translates to:
+  /// **'CropDoc AI'**
+  String get krishidnyaAI;
+
+  /// No description provided for @askAnythingAboutFarming.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask anything about farming'**
+  String get askAnythingAboutFarming;
 }
 
 class _AppLocalizationsDelegate
@@ -1573,8 +1731,14 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'en',
+    'gu',
+    'hi',
+    'mr',
+    'pa',
+    'ta',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1585,8 +1749,16 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'gu':
+      return AppLocalizationsGu();
     case 'hi':
       return AppLocalizationsHi();
+    case 'mr':
+      return AppLocalizationsMr();
+    case 'pa':
+      return AppLocalizationsPa();
+    case 'ta':
+      return AppLocalizationsTa();
   }
 
   throw FlutterError(

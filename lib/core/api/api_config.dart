@@ -3,8 +3,8 @@ abstract final class ApiConfig {
   /// Production backend entrypoint.
   /// Override via --dart-define=API_BASE_URL=...
   static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://13.200.235.31',
+    'https://coyness-hastily-enjoyably.ngrok-free.dev',
+    defaultValue: 'https://coyness-hastily-enjoyably.ngrok-free.dev',
   );
 
   /// AdMob banner unit — use test ID in debug.
@@ -16,8 +16,6 @@ abstract final class ApiConfig {
   // Auth
   static const String register = '/register';
   static const String token = '/token';
-  static const String sendOtp = '/auth/send-otp';
-  static const String verifyOtp = '/auth/verify-otp';
 
   // User
   static const String currentUser = '/users/me';

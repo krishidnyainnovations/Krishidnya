@@ -1,10 +1,10 @@
-import 'package:krishidnya/core/api/api_config.dart';
-import 'package:krishidnya/core/constants/app_constants.dart';
-import 'package:krishidnya/core/network/api_client.dart';
-import 'package:krishidnya/core/services/app_logger.dart';
-import 'package:krishidnya/core/storage/secure_storage_service.dart';
-import 'package:krishidnya/features/auth/domain/entities/auth_models.dart';
-import 'package:krishidnya/features/auth/domain/entities/user.dart';
+import 'package:cropdoc/core/api/api_config.dart';
+import 'package:cropdoc/core/constants/app_constants.dart';
+import 'package:cropdoc/core/network/api_client.dart';
+import 'package:cropdoc/core/services/app_logger.dart';
+import 'package:cropdoc/core/storage/secure_storage_service.dart';
+import 'package:cropdoc/features/auth/domain/entities/auth_models.dart';
+import 'package:cropdoc/features/auth/domain/entities/user.dart';
 
 /// Remote data source for authentication API calls.
 class AuthRemoteDataSource {
@@ -12,9 +12,9 @@ class AuthRemoteDataSource {
     required ApiClient apiClient,
     required SecureStorageService storage,
     AppLogger? logger,
-  })  : _apiClient = apiClient,
-        _storage = storage,
-        _logger = logger ?? AppLogger.instance;
+  }) : _apiClient = apiClient,
+       _storage = storage,
+       _logger = logger ?? AppLogger.instance;
 
   final ApiClient _apiClient;
   final SecureStorageService _storage;
@@ -30,7 +30,11 @@ class AuthRemoteDataSource {
     );
 
     final user = User.fromJson(registerResponse.data!);
-    _logger.info('Auth', 'Registration successful', details: 'User ID: ${user.id}');
+    _logger.info(
+      'Auth',
+      'Registration successful',
+      details: 'User ID: ${user.id}',
+    );
 
     return _loginAfterRegister(
       mobile: request.mobile,
@@ -44,11 +48,9 @@ class AuthRemoteDataSource {
     _logger.info('Auth', 'Logging in mobile: ${request.mobile}');
 
     final token = await _fetchToken(request);
-    final user = await _fetchCurrentUser() ?? User(
-          id: '',
-          username: request.mobile,
-          mobile: request.mobile,
-        );
+    final user =
+        await _fetchCurrentUser() ??
+        User(id: '', username: request.mobile, mobile: request.mobile);
 
     await _persistToken(token.accessToken, user.id);
 
@@ -155,48 +157,16 @@ class AuthRemoteDataSource {
     String? city,
     String? state,
   }) async {
-    final response = await _apiClient.put<Map<String, dynamic>>(
+    final response = await _apiClient.patch<Map<String, dynamic>>(
       ApiConfig.updateLocation,
+      queryParameters: {'latitude': latitude, 'longitude': longitude},
       data: {
-        'latitude': latitude,
-        'longitude': longitude,
         if (location != null) 'location': location,
         if (city != null) 'city': city,
         if (state != null) 'state': state,
       },
     );
     return User.fromJson(response.data!);
-  }
-
-  Future<void> sendOtp(String mobile) async {
-    await _apiClient.post<Map<String, dynamic>>(
-      ApiConfig.sendOtp,
-      data: {'mobile': mobile},
-    );
-  }
-
-  Future<AuthResponse> verifyOtp({
-    required String mobile,
-    required String otp,
-  }) async {
-    final response = await _apiClient.post<Map<String, dynamic>>(
-      ApiConfig.verifyOtp,
-      data: {'mobile': mobile, 'otp': otp},
-    );
-
-    final token = TokenResponse.fromJson(response.data!);
-    await _storage.write(AppConstants.accessTokenKey, token.accessToken);
-
-    final user = await _fetchCurrentUser() ??
-        User(id: '', username: mobile, mobile: mobile);
-
-    await _persistToken(token.accessToken, user.id);
-
-    return AuthResponse(
-      accessToken: token.accessToken,
-      tokenType: token.tokenType,
-      user: user,
-    );
   }
 
   Future<void> deleteAccount() async {

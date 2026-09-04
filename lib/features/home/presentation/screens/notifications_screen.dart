@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
-import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
-import 'package:krishidnya/l10n/app_localizations.dart';
-import 'package:krishidnya/widgets/feedback/empty_state_widget.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/features/home/domain/entities/feature_models.dart';
+import 'package:cropdoc/features/home/presentation/controllers/home_providers.dart';
+import 'package:cropdoc/l10n/app_localizations.dart';
+import 'package:cropdoc/widgets/feedback/empty_state_widget.dart';
 
 /// In-app notification center with read-state tracking.
 class NotificationsScreen extends ConsumerWidget {

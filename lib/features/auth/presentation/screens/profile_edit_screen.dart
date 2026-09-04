@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:krishidnya/core/config/providers.dart';
-import 'package:krishidnya/core/errors/exception_mapper.dart';
-import 'package:krishidnya/core/services/location_service.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:krishidnya/features/home/presentation/controllers/home_providers.dart';
-import 'package:krishidnya/widgets/buttons/primary_button.dart';
-import 'package:krishidnya/widgets/feedback/app_snackbar.dart';
-import 'package:krishidnya/widgets/inputs/app_text_field.dart';
+import 'package:cropdoc/core/config/providers.dart';
+import 'package:cropdoc/core/errors/exception_mapper.dart';
+import 'package:cropdoc/core/services/location_service.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:cropdoc/features/home/presentation/controllers/home_providers.dart';
+import 'package:cropdoc/l10n/app_localizations.dart';
+import 'package:cropdoc/widgets/buttons/primary_button.dart';
+import 'package:cropdoc/widgets/feedback/app_snackbar.dart';
+import 'package:cropdoc/widgets/inputs/app_text_field.dart';
 
 /// Edit profile name, email, and location.
 class ProfileEditScreen extends ConsumerStatefulWidget {
@@ -55,6 +56,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _loading = true);
     final result = await ref.read(authRepositoryProvider).updateProfile(
           fullName: _nameCtrl.text.trim(),
@@ -69,7 +71,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       case Success():
         ref.invalidate(currentUserProvider);
         ref.invalidate(homeWeatherProvider);
-        AppSnackBar.success(context, 'Profile updated');
+        AppSnackBar.success(context, l10n.profileUpdated);
         context.pop();
       case ErrorResult(:final failure):
         AppSnackBar.error(context, failure.message);
@@ -77,13 +79,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _updateGpsLocation() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _updatingLocation = true);
     final locationService = ref.read(locationServiceProvider);
     final granted = await locationService.requestPermission();
     if (!granted) {
       if (mounted) {
         setState(() => _updatingLocation = false);
-        AppSnackBar.error(context, 'Location permission denied');
+        AppSnackBar.error(context, l10n.locationPermissionDenied);
       }
       return;
     }
@@ -110,7 +113,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             _stateCtrl.text = data.state ?? '';
             ref.invalidate(currentUserProvider);
             ref.invalidate(homeWeatherProvider);
-            AppSnackBar.success(context, 'Location updated from GPS');
+            AppSnackBar.success(context, l10n.locationUpdatedFromGps);
           case ErrorResult(:final failure):
             AppSnackBar.error(context, failure.message);
         }
@@ -122,20 +125,21 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Profile')),
+      appBar: AppBar(title: Text(l10n.editProfile)),
       body: ListView(
         padding: AppSpacing.screenPadding,
         children: [
-          AppTextField(label: 'Full Name', controller: _nameCtrl),
+          AppTextField(label: l10n.fullName, controller: _nameCtrl),
           const SizedBox(height: AppSpacing.md),
-          AppTextField(label: 'Email', controller: _emailCtrl),
+          AppTextField(label: l10n.email, controller: _emailCtrl),
           const SizedBox(height: AppSpacing.md),
-          AppTextField(label: 'Location', controller: _locationCtrl),
+          AppTextField(label: l10n.location, controller: _locationCtrl),
           const SizedBox(height: AppSpacing.md),
-          AppTextField(label: 'City', controller: _cityCtrl),
+          AppTextField(label: l10n.city, controller: _cityCtrl),
           const SizedBox(height: AppSpacing.md),
-          AppTextField(label: 'State', controller: _stateCtrl),
+          AppTextField(label: l10n.stateLabel, controller: _stateCtrl),
           const SizedBox(height: AppSpacing.lg),
           OutlinedButton.icon(
             onPressed: _updatingLocation ? null : _updateGpsLocation,
@@ -146,11 +150,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.my_location),
-            label: const Text('Update from GPS'),
+            label: Text(l10n.updateFromGps),
           ),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(
-            label: 'Save Changes',
+            label: l10n.saveChanges,
             isLoading: _loading,
             onPressed: _save,
           ),

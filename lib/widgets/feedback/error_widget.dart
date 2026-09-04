@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/widgets/buttons/primary_button.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/widgets/buttons/primary_button.dart';
 
 /// Reusable error display with retry action.
 class AppErrorWidget extends StatelessWidget {

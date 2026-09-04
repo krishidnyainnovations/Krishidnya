@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:krishidnya/core/routes/app_routes.dart';
-import 'package:krishidnya/core/theme/app_spacing.dart';
-import 'package:krishidnya/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:krishidnya/l10n/app_localizations.dart';
-import 'package:krishidnya/widgets/buttons/primary_button.dart';
-import 'package:krishidnya/widgets/inputs/app_text_field.dart';
+import 'package:cropdoc/core/routes/app_routes.dart';
+import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:cropdoc/l10n/app_localizations.dart';
+import 'package:cropdoc/widgets/buttons/primary_button.dart';
+import 'package:cropdoc/widgets/inputs/app_text_field.dart';
 
 /// Registration step 1 — collect user details.
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -41,7 +41,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   void _continue() {
     if (!_formKey.currentState!.validate()) return;
 
-    ref.read(registrationControllerProvider.notifier).updateForm(
+    ref
+        .read(registrationControllerProvider.notifier)
+        .updateForm(
           fullName: _fullNameController.text,
           email: _emailController.text,
           mobile: _mobileController.text,
@@ -49,9 +51,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           confirmPassword: _confirmPasswordController.text,
         );
 
-    ref
-        .read(registrationControllerProvider.notifier)
-        .goToLocationPermission();
+    ref.read(registrationControllerProvider.notifier).goToLocationPermission();
 
     context.push(AppRoutes.registerLocationPermission);
   }
@@ -65,9 +65,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.canPop()
-              ? context.pop()
-              : context.go(AppRoutes.onboarding),
+          onPressed:
+              () =>
+                  context.canPop()
+                      ? context.pop()
+                      : context.go(AppRoutes.onboarding),
         ),
       ),
       body: SafeArea(
@@ -95,8 +97,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   textInputAction: TextInputAction.next,
                   prefixIcon: const Icon(Icons.person_outline_rounded),
                   autofillHints: const [AutofillHints.name],
-                  validator: (v) =>
-                      v == null || v.trim().isEmpty ? l10n.nameRequired : null,
+                  validator:
+                      (v) =>
+                          v == null || v.trim().isEmpty
+                              ? l10n.nameRequired
+                              : null,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppTextField(
@@ -126,8 +131,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(10),
                   ],
-                  validator: (v) =>
-                      v == null || v.length < 10 ? l10n.validMobile : null,
+                  validator:
+                      (v) =>
+                          v == null || v.length < 10 ? l10n.validMobile : null,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppTextField(
@@ -137,15 +143,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   textInputAction: TextInputAction.next,
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined),
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
+                    onPressed:
+                        () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                   ),
-                  validator: (v) => v == null || v.length < 6
-                      ? l10n.passwordMinLength
-                      : null,
+                  validator: (v) {
+                    if (v == null || v.length < 8) {
+                      return l10n.passwordMinLength;
+                    }
+                    if (!v.contains(RegExp(r'[A-Z]')) ||
+                        !v.contains(RegExp(r'[a-z]')) ||
+                        !v.contains(RegExp(r'[0-9]')) ||
+                        !v.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+                      return "Password must contain uppercase, lowercase, number, and special character";
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppTextField(
@@ -155,11 +174,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   textInputAction: TextInputAction.done,
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirm
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined),
-                    onPressed: () =>
-                        setState(() => _obscureConfirm = !_obscureConfirm),
+                    icon: Icon(
+                      _obscureConfirm
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
+                    onPressed:
+                        () =>
+                            setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
                   validator: (v) {
                     if (v != _passwordController.text) {

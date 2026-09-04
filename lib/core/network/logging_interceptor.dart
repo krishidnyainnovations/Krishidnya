@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:krishidnya/core/services/app_logger.dart';
+import 'package:cropdoc/core/services/app_logger.dart';
 
 /// Logs all HTTP traffic to [AppLogger] for monitoring and debugging.
 class LoggingInterceptor extends Interceptor {

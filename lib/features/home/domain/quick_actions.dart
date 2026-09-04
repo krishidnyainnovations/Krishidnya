@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:krishidnya/core/routes/app_routes.dart';
-import 'package:krishidnya/core/theme/app_colors.dart';
-import 'package:krishidnya/l10n/app_localizations.dart';
+import 'package:cropdoc/core/routes/app_routes.dart';
+import 'package:cropdoc/core/theme/app_colors.dart';
+import 'package:cropdoc/l10n/app_localizations.dart';
 
 /// Quick action definition for home grid.
 class QuickActionItem {

@@ -1,19 +1,20 @@
 import 'package:dio/dio.dart';
-import 'package:krishidnya/core/api/api_config.dart';
-import 'package:krishidnya/core/errors/exception_mapper.dart';
-import 'package:krishidnya/core/network/api_client.dart';
-import 'package:krishidnya/core/services/app_logger.dart';
-import 'package:krishidnya/features/home/data/local_farm_storage.dart';
-import 'package:krishidnya/features/home/domain/entities/feature_models.dart';
-import 'package:krishidnya/features/home/domain/entities/home_entities.dart';
+import 'package:flutter/foundation.dart';
+import 'package:cropdoc/core/api/api_config.dart';
+import 'package:cropdoc/core/constants/app_constants.dart';
+import 'package:cropdoc/core/errors/exception_mapper.dart';
+import 'package:cropdoc/core/errors/failures.dart';
+import 'package:cropdoc/core/network/api_client.dart';
+import 'package:cropdoc/core/services/app_logger.dart';
+import 'package:cropdoc/features/home/data/local_farm_storage.dart';
+import 'package:cropdoc/features/home/domain/entities/feature_models.dart';
+import 'package:cropdoc/features/home/domain/entities/home_entities.dart';
 
 /// Remote API calls for home screen features.
 class HomeRemoteDataSource {
-  HomeRemoteDataSource({
-    required ApiClient apiClient,
-    AppLogger? logger,
-  })  : _client = apiClient,
-        _logger = logger ?? AppLogger.instance;
+  HomeRemoteDataSource({required ApiClient apiClient, AppLogger? logger})
+    : _client = apiClient,
+      _logger = logger ?? AppLogger.instance;
 
   final ApiClient _client;
   final AppLogger _logger;
@@ -193,26 +194,20 @@ class HomeRemoteDataSource {
   }
 
   Future<List<AppNotification>> fetchNotifications() async {
-    final response = await _client.get<List<dynamic>>(
-      ApiConfig.notifications,
-    );
+    final response = await _client.get<List<dynamic>>(ApiConfig.notifications);
     return (response.data ?? [])
         .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
   Future<List<FarmCrop>> fetchFarmCropsFromServer() async {
-    final response = await _client.get<List<dynamic>>(ApiConfig.farmCrops);
-    return (response.data ?? [])
-        .map((e) => FarmCrop.fromJson(e as Map<String, dynamic>))
-        .toList();
+    // Server sync not implemented - return empty list
+    return [];
   }
 
   Future<void> syncFarmCropsToServer(List<FarmCrop> crops) async {
-    await _client.post<Map<String, dynamic>>(
-      ApiConfig.farmCrops,
-      data: {'crops': crops.map((c) => c.toJson()).toList()},
-    );
+    // Server sync not implemented - do nothing
+    // This is a local-only feature for now
   }
 
   Future<Map<String, dynamic>> sendChatMessage({
@@ -226,6 +221,10 @@ class HomeRemoteDataSource {
         'conversation_history': history ?? [],
         'model': 'gemini',
       },
+      options: Options(
+        receiveTimeout: AppConstants.chatTimeout,
+        sendTimeout: AppConstants.chatTimeout,
+      ),
     );
     return response.data ?? {};
   }
@@ -234,6 +233,10 @@ class HomeRemoteDataSource {
     final response = await _client.multipart<Map<String, dynamic>>(
       ApiConfig.scanCrop,
       formData: formData,
+      options: Options(
+        receiveTimeout: AppConstants.imageTimeout,
+        sendTimeout: AppConstants.imageTimeout,
+      ),
     );
     return response.data ?? {};
   }
@@ -243,28 +246,30 @@ class HomeRemoteDataSource {
     String? title,
     String category = 'Discussion',
     String? imagePath,
+    List<int>? imageBytes,
+    String? imageName,
   }) async {
-    if (imagePath != null) {
-      final formData = FormData.fromMap({
-        'content': content,
-        if (title != null) 'title': title,
-        'category': category,
-        'file': await MultipartFile.fromFile(imagePath),
-      });
-      final response = await _client.multipart<Map<String, dynamic>>(
-        ApiConfig.posts,
-        formData: formData,
+    Map<String, dynamic> formDataMap = {
+      'content': content,
+      if (title != null) 'title': title,
+      'category': category,
+    };
+
+    if (imagePath != null && !kIsWeb) {
+      // Native platform - use file path
+      formDataMap['file'] = await MultipartFile.fromFile(imagePath);
+    } else if (imageBytes != null && imageName != null) {
+      // Web platform - use bytes
+      formDataMap['file'] = MultipartFile.fromBytes(
+        imageBytes,
+        filename: imageName,
       );
-      return response.data ?? {};
     }
 
-    final response = await _client.post<Map<String, dynamic>>(
+    final formData = FormData.fromMap(formDataMap);
+    final response = await _client.multipart<Map<String, dynamic>>(
       ApiConfig.posts,
-      data: {
-        'content': content,
-        if (title != null) 'title': title,
-        'category': category,
-      },
+      formData: formData,
     );
     return response.data ?? {};
   }
@@ -302,7 +307,10 @@ class HomeRepository {
 
   final HomeRemoteDataSource _remote;
 
-  Future<Result<List<Scheme>>> getSchemes({String? search, String? type}) async {
+  Future<Result<List<Scheme>>> getSchemes({
+    String? search,
+    String? type,
+  }) async {
     try {
       return Success(await _remote.fetchSchemes(search: search, type: type));
     } catch (e) {
@@ -346,12 +354,14 @@ class HomeRepository {
     bool includeForecast = true,
   }) async {
     try {
-      return Success(await _remote.fetchWeather(
-        latitude: latitude,
-        longitude: longitude,
-        locationLabel: locationLabel,
-        includeForecast: includeForecast,
-      ));
+      return Success(
+        await _remote.fetchWeather(
+          latitude: latitude,
+          longitude: longitude,
+          locationLabel: locationLabel,
+          includeForecast: includeForecast,
+        ),
+      );
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
@@ -363,11 +373,13 @@ class HomeRepository {
     String? district,
   }) async {
     try {
-      return Success(await _remote.fetchMandiPrices(
-        commodity: commodity,
-        state: state,
-        district: district,
-      ));
+      return Success(
+        await _remote.fetchMandiPrices(
+          commodity: commodity,
+          state: state,
+          district: district,
+        ),
+      );
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
@@ -378,10 +390,9 @@ class HomeRepository {
     required double longitude,
   }) async {
     try {
-      return Success(await _remote.fetchSoilData(
-        latitude: latitude,
-        longitude: longitude,
-      ));
+      return Success(
+        await _remote.fetchSoilData(latitude: latitude, longitude: longitude),
+      );
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
@@ -432,10 +443,12 @@ class HomeRepository {
     double? longitude,
   }) async {
     try {
-      return Success(await _remote.fetchNearbyUsers(
-        latitude: latitude,
-        longitude: longitude,
-      ));
+      return Success(
+        await _remote.fetchNearbyUsers(
+          latitude: latitude,
+          longitude: longitude,
+        ),
+      );
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
@@ -471,10 +484,9 @@ class HomeRepository {
     List<Map<String, String>>? history,
   }) async {
     try {
-      return Success(await _remote.sendChatMessage(
-        message: message,
-        history: history,
-      ));
+      return Success(
+        await _remote.sendChatMessage(message: message, history: history),
+      );
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
@@ -482,8 +494,31 @@ class HomeRepository {
 
   Future<Result<Map<String, dynamic>>> scanCropImage(String filePath) async {
     try {
+      if (kIsWeb) {
+        // On Web, we need to read bytes differently since MultipartFile.fromFile doesn't work
+        return ErrorResult(
+          UnknownFailure('Use scanCropImageBytes for Web support'),
+        );
+      }
+
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(filePath),
+        'image': await MultipartFile.fromFile(filePath),
+        'language': 'en',
+      });
+      return Success(await _remote.scanCrop(formData: formData));
+    } catch (e) {
+      return ErrorResult(ExceptionMapper.map(e));
+    }
+  }
+
+  Future<Result<Map<String, dynamic>>> scanCropImageBytes(
+    List<int> bytes,
+    String filename,
+  ) async {
+    try {
+      final formData = FormData.fromMap({
+        'image': MultipartFile.fromBytes(bytes, filename: filename),
+        'language': 'en',
       });
       return Success(await _remote.scanCrop(formData: formData));
     } catch (e) {
@@ -501,31 +536,17 @@ class HomeRepository {
     String? soilApiData,
   }) async {
     final prompt = '''
-You are an expert agricultural advisor for Indian farmers.
-Based on the following farm data, recommend exactly 4 crops suitable for this farmer.
-Respond ONLY with valid JSON (no markdown) in this format:
+Indian farm advisor.
+Recommend 4 crops.
+JSON only:
 {
   "weather_analysis": {"temperature": "...", "humidity": "...", "expected_rain": "..."},
   "crops": [
-    {
-      "name": "Crop Name",
-      "why": "Why grow this crop",
-      "water_required": "...",
-      "days_to_harvest": "...",
-      "growing_period": "...",
-      "expected_profit": "..."
-    }
+    {"name": "...", "why": "...", "water_required": "...", "days_to_harvest": "...", "growing_period": "...", "expected_profit": "..."}
   ]
 }
 
-Farm data:
-- Soil type: $soilType
-- Season: $season
-- Watering method: $watering
-- Farm area: $area acres
-- Location: $location
-${weatherSummary != null ? '- Current weather: $weatherSummary' : ''}
-${soilApiData != null ? '- Soil API data: $soilApiData' : ''}
+Data: soil=$soilType, season=$season, water=$watering, area=${area}ac, loc=$location${weatherSummary != null ? ', weather=$weatherSummary' : ''}${soilApiData != null ? ', soil=$soilApiData' : ''}
 ''';
 
     try {
@@ -541,14 +562,20 @@ ${soilApiData != null ? '- Soil API data: $soilApiData' : ''}
     String? title,
     String category = 'Discussion',
     String? imagePath,
+    List<int>? imageBytes,
+    String? imageName,
   }) async {
     try {
-      return Success(await _remote.createPost(
-        content: content,
-        title: title,
-        category: category,
-        imagePath: imagePath,
-      ));
+      return Success(
+        await _remote.createPost(
+          content: content,
+          title: title,
+          category: category,
+          imagePath: imagePath,
+          imageBytes: imageBytes,
+          imageName: imageName,
+        ),
+      );
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }
@@ -565,16 +592,18 @@ ${soilApiData != null ? '- Soil API data: $soilApiData' : ''}
     String? contactPhone,
   }) async {
     try {
-      return Success(await _remote.createProduct(
-        name: name,
-        category: category,
-        price: price,
-        unit: unit,
-        description: description,
-        listingType: listingType,
-        state: state,
-        contactPhone: contactPhone,
-      ));
+      return Success(
+        await _remote.createProduct(
+          name: name,
+          category: category,
+          price: price,
+          unit: unit,
+          description: description,
+          listingType: listingType,
+          state: state,
+          contactPhone: contactPhone,
+        ),
+      );
     } catch (e) {
       return ErrorResult(ExceptionMapper.map(e));
     }

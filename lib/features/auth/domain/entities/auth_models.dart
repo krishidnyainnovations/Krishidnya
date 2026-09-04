@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:krishidnya/features/auth/domain/entities/user.dart';
+import 'package:cropdoc/features/auth/domain/entities/user.dart';
 
 /// Registration request payload aligned with backend `UserCreate` schema.
 class RegisterRequest extends Equatable {
