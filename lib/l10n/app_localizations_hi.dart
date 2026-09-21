@@ -289,6 +289,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get passwordsNoMatch => 'पासवर्ड मेल नहीं खाते';
 
   @override
+  String get confirmPasswordRequired => 'कृपया अपना पासवर्ड की पुष्टि करें';
+
+  @override
   String get enterPassword => 'कृपया अपना पासवर्ड दर्ज करें';
 
   @override
@@ -447,20 +450,20 @@ class AppLocalizationsHi extends AppLocalizations {
   String get gallery => 'गैलरी';
 
   @override
-  String get organicCureRecommended => 'जैविक उपचार (अनुशंसित)';
+  String get organicCureRecommended => 'जैविक उपचार की सिफारिश';
 
   @override
   String get chemicalCure => 'रासायनिक उपचार';
 
   @override
-  String get recommendedProducts => 'अनुशंसित उत्पाद';
+  String get recommendedProducts => 'सिफारिशी उत्पाद';
 
   @override
   String get dosageLabel => 'खुराक';
 
   @override
   String confidenceLabel(String value) {
-    return 'विश्वास: $value';
+    return 'विश्वास: $value%';
   }
 
   @override
@@ -780,80 +783,104 @@ class AppLocalizationsHi extends AppLocalizations {
   String get harvestShort => 'कटाई';
 
   @override
-  String get clearChat => 'Clear Chat';
+  String get clearChat => 'चैट साफ़ करें';
 
   @override
-  String get howCanHelpFarmToday => 'How can I help your farm today?';
+  String get howCanHelpFarmToday => 'आज मैं आपके खेत की मदद कैसे कर सकता हूँ?';
 
   @override
   String get askAboutCropsWeatherDiseases =>
-      'Ask about crops, weather, diseases, or government schemes.';
+      'फसल, मौसम, बीमारी या सरकारी योजनाओं के बारे में पूछें।';
 
   @override
-  String get listening => 'Listening...';
+  String get listening => 'सुन रहा हूँ...';
 
   @override
-  String get typeYourQuestion => 'Type your question...';
+  String get typeYourQuestion => 'अपना प्रश्न टाइप करें...';
 
   @override
-  String get communityTitle => 'Community';
+  String get communityTitle => 'समुदाय';
 
   @override
-  String get farmerCommunity => 'Farmer Community';
+  String get farmerCommunity => 'किसान समुदाय';
 
   @override
   String get farmerCommunitySubtitle =>
-      'Share crop updates, give advice, and connect with nearby farmers.';
+      'फसल अपडेट साझा करें, सलाह दें, और पास के किसानों से जुड़ें।';
 
   @override
-  String get noPostsYet => 'No posts yet';
+  String get noPostsYet => 'अभी कोई पोस्ट नहीं';
 
   @override
   String get noPostsYetSubtitle =>
-      'Share your first farm update with the community.';
+      'समुदाय के साथ अपना पहला खेत अपडेट साझा करें।';
 
   @override
-  String get shareUpdate => 'Share Update';
+  String get shareUpdate => 'अपडेट साझा करें';
 
   @override
-  String get titleOptional => 'Title (optional)';
+  String get titleOptional => 'शीर्षक (वैकल्पिक)';
 
   @override
-  String get category => 'Category';
+  String get category => 'श्रेणी';
 
   @override
-  String get whatsHappeningOnFarm => 'What\'s happening on your farm?';
+  String get whatsHappeningOnFarm => 'आपके खेत में क्या हो रहा है?';
 
   @override
-  String get addPhoto => 'Add Photo';
+  String get addPhoto => 'फोटो जोड़ें';
 
   @override
-  String get photoSelected => 'Photo Selected';
+  String get photoSelected => 'फोटो चुना गया';
 
   @override
-  String get post => 'Post';
+  String get post => 'पोस्ट करें';
 
   @override
-  String get writeSomethingToShare => 'Write something to share';
+  String get writeSomethingToShare => 'साझा करने के लिए कुछ लिखें';
 
   @override
-  String get commentsTitle => 'Comments';
+  String get commentsTitle => 'टिप्पणियाँ';
 
   @override
-  String get noCommentsYet => 'No comments yet. Be the first!';
+  String get noCommentsYet => 'अभी कोई टिप्पणी नहीं। पहले बनें!';
 
   @override
-  String get addAComment => 'Add a comment';
+  String get addAComment => 'टिप्पणी जोड़ें';
 
   @override
-  String get postComment => 'Post Comment';
+  String get postComment => 'टिप्पणी पोस्ट करें';
 
   @override
-  String get profileTitle => 'Profile';
+  String get profileTitle => 'प्रोफ़ाइल';
 
   @override
   String get krishidnyaAI => 'CropDoc AI';
 
   @override
-  String get askAnythingAboutFarming => 'Ask anything about farming';
+  String get askAnythingAboutFarming => 'खेती के बारे में कुछ भी पूछें';
+
+  @override
+  String get profileUpdated => 'प्रोफ़ाइल अपडेट हो गया';
+
+  @override
+  String get locationPermissionDenied => 'स्थान की अनुमति मना कर दी गई';
+
+  @override
+  String get locationUpdatedFromGps => 'GPS से स्थान अपडेट हो गया';
+
+  @override
+  String get editProfile => 'प्रोफ़ाइल संपादित करें';
+
+  @override
+  String get location => 'स्थान';
+
+  @override
+  String get city => 'शहर';
+
+  @override
+  String get updateFromGps => 'GPS से अपडेट करें';
+
+  @override
+  String get saveChanges => 'परिवर्तन सहेजें';
 }

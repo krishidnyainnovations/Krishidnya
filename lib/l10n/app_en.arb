@@ -99,6 +99,7 @@
   "validMobileLogin": "Please enter a valid 10-digit mobile number",
   "passwordMinLength": "Password must be at least 6 characters",
   "passwordsNoMatch": "Passwords do not match",
+  "confirmPasswordRequired": "Please confirm your password",
   "enterPassword": "Please enter your password",
   "fullNameHint": "e.g. Tejas Barguje",
   "emailHint": "your@email.com",
@@ -291,5 +292,13 @@
   "postComment": "Post Comment",
   "profileTitle": "Profile",
   "krishidnyaAI": "CropDoc AI",
-  "askAnythingAboutFarming": "Ask anything about farming"
+  "askAnythingAboutFarming": "Ask anything about farming",
+  "profileUpdated": "Profile updated",
+  "locationPermissionDenied": "Location permission denied",
+  "locationUpdatedFromGps": "Location updated from GPS",
+  "editProfile": "Edit Profile",
+  "location": "Location",
+  "city": "City",
+  "updateFromGps": "Update from GPS",
+  "saveChanges": "Save Changes"
 }

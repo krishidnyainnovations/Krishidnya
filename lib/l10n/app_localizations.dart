@@ -640,6 +640,12 @@ abstract class AppLocalizations {
   /// **'Passwords do not match'**
   String get passwordsNoMatch;
 
+  /// No description provided for @confirmPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your password'**
+  String get confirmPasswordRequired;
+
   /// No description provided for @enterPassword.
   ///
   /// In en, this message translates to:
@@ -1719,6 +1725,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ask anything about farming'**
   String get askAnythingAboutFarming;
+
+  /// No description provided for @profileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated'**
+  String get profileUpdated;
+
+  /// No description provided for @locationPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission denied'**
+  String get locationPermissionDenied;
+
+  /// No description provided for @locationUpdatedFromGps.
+  ///
+  /// In en, this message translates to:
+  /// **'Location updated from GPS'**
+  String get locationUpdatedFromGps;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @location.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get location;
+
+  /// No description provided for @city.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get city;
+
+  /// No description provided for @updateFromGps.
+  ///
+  /// In en, this message translates to:
+  /// **'Update from GPS'**
+  String get updateFromGps;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
 }
 
 class _AppLocalizationsDelegate

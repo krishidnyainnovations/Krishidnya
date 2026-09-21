@@ -12,10 +12,13 @@ class ChatHistoryService {
   List<Map<String, String>> load() {
     final raw = _prefs.getString(_key);
     if (raw == null) return [];
-    final list = jsonDecode(raw) as List<dynamic>;
-    return list
-        .map((e) => Map<String, String>.from(e as Map))
-        .toList();
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list.map((e) => Map<String, String>.from(e as Map)).toList();
+    } catch (e) {
+      // Return empty list if data is corrupted
+      return [];
+    }
   }
 
   Future<void> save(List<Map<String, String>> history) async {
@@ -52,21 +55,32 @@ class MandiPreferences {
   List<String> getFavorites() {
     final raw = _prefs.getString(_favoritesKey);
     if (raw == null) return [];
-    return (jsonDecode(raw) as List<dynamic>).cast<String>();
+    try {
+      return (jsonDecode(raw) as List<dynamic>).cast<String>();
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> addFavorite(String crop) async {
     final favorites = getFavorites();
     if (!favorites.contains(crop)) {
       favorites.insert(0, crop);
-      await _prefs.setString(_favoritesKey, jsonEncode(favorites.take(10).toList()));
+      await _prefs.setString(
+        _favoritesKey,
+        jsonEncode(favorites.take(10).toList()),
+      );
     }
   }
 
   List<String> getRecent() {
     final raw = _prefs.getString(_recentKey);
     if (raw == null) return [];
-    return (jsonDecode(raw) as List<dynamic>).cast<String>();
+    try {
+      return (jsonDecode(raw) as List<dynamic>).cast<String>();
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> addRecent(String crop) async {
@@ -86,7 +100,11 @@ class NotificationPreferences {
   Set<String> getReadIds() {
     final raw = _prefs.getString(_readKey);
     if (raw == null) return {};
-    return (jsonDecode(raw) as List<dynamic>).cast<String>().toSet();
+    try {
+      return (jsonDecode(raw) as List<dynamic>).cast<String>().toSet();
+    } catch (e) {
+      return {};
+    }
   }
 
   Future<void> markAsRead(String id) async {

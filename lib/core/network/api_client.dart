@@ -1,5 +1,3 @@
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:cropdoc/core/api/api_config.dart';
 import 'package:cropdoc/core/constants/app_constants.dart';
 import 'package:cropdoc/core/network/auth_interceptor.dart';
@@ -7,6 +5,8 @@ import 'package:cropdoc/core/network/logging_interceptor.dart';
 import 'package:cropdoc/core/network/retry_interceptor.dart';
 import 'package:cropdoc/core/services/app_logger.dart';
 import 'package:cropdoc/core/storage/secure_storage_service.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Centralized HTTP client with interceptors, retry, and auth support.
 class ApiClient {
@@ -45,6 +45,7 @@ class ApiClient {
     _dio.options = BaseOptions(
       baseUrl: ApiConfig.baseUrl,
       connectTimeout: AppConstants.connectTimeout,
+      sendTimeout: AppConstants.sendTimeout,
       receiveTimeout: AppConstants.receiveTimeout,
       headers: {
         'Content-Type': 'application/json',

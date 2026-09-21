@@ -296,6 +296,10 @@ class AppLocalizationsTa extends AppLocalizations {
   String get passwordsNoMatch => 'கடவுச்சொற்கள் பொருந்தவில்லை';
 
   @override
+  String get confirmPasswordRequired =>
+      'தயவு செய்து உங்கள் கடவுச்சொல்லை உறுதிப்படுத்தவும்';
+
+  @override
   String get enterPassword => 'தயவு செய்து உங்கள் கடவுச்சொல்லை உள்ளிடவும்';
 
   @override
@@ -869,4 +873,29 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get askAnythingAboutFarming => 'விவசாயம் பற்றி எதுவும் கேளுங்கள்';
+
+  @override
+  String get profileUpdated => 'சுயவிவரம் புதுப்பிக்கப்பட்டது';
+
+  @override
+  String get locationPermissionDenied => 'இருப்பிடம் அனுமதி மறுக்கப்பட்டது';
+
+  @override
+  String get locationUpdatedFromGps =>
+      'GPS இலிருந்து இருப்பிடம் புதுப்பிக்கப்பட்டது';
+
+  @override
+  String get editProfile => 'சுயவிவரத்தைத் திருத்து';
+
+  @override
+  String get location => 'இருப்பிடம்';
+
+  @override
+  String get city => 'நகரம்';
+
+  @override
+  String get updateFromGps => 'GPS இலிருந்து புதுப்பிக்கவும்';
+
+  @override
+  String get saveChanges => 'மாற்றங்களை சேமி';
 }

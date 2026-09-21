@@ -103,6 +103,7 @@
   "validMobileLogin": "ਕਿਰਪਾ ਕਰਕੇ ਵੈਧ 10-ਅੰਕ ਦਾ ਮੋਬਾਈਲ ਨੰਬਰ ਦਾਖਲ ਕਰੋ",
   "passwordMinLength": "ਪਾਸਵਰਡ ਘੱਟੋ-ਘੱਟ 6 ਅੱਖਰਾਂ ਦਾ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ",
   "passwordsNoMatch": "ਪਾਸਵਰਡ ਮੇਲ ਨਹੀਂ ਖਾਂਦੇ",
+  "confirmPasswordRequired": "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਪਾਸਵਰਡ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
   "enterPassword": "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਪਾਸਵਰਡ ਦਾਖਲ ਕਰੋ",
   "fullNameHint": "ਜਿਵੇਂ ਤੇਜਸ ਬਰਗੁਜੇ",
   "emailHint": "your@email.com",
@@ -285,5 +286,13 @@
   "profileTitle": "ਪ੍ਰੋਫਾਈਲ",
   "cropdocAI": "ਕ੍ਰਿਸ਼ਿਦnya AI",
   "askAnythingAboutFarming": "ਖੇਤੀ ਬਾਰੇ ਕੋਈ ਵੀ ਸਵਾਲ ਪੁੱਛੋ",
-  "krishidnyaAI": "ਕ੍ਰਿਸ਼ਿਦnya AI"
+  "krishidnyaAI": "ਕ੍ਰਿਸ਼ਿਦnya AI",
+  "profileUpdated": "ਪ੍ਰੋਫਾਈਲ ਅਪਡੇਟ ਹੋ ਗਿਆ",
+  "locationPermissionDenied": "ਸਥਾਨ ਦੀ ਇਜਾਜਤ ਤੋਂ ਇਨਕਾਰ",
+  "locationUpdatedFromGps": "GPS ਤੋਂ ਸਥਾਨ ਅਪਡੇਟ ਹੋ ਗਿਆ",
+  "editProfile": "ਪ੍ਰੋਫਾਈਲ ਸੰਪਾਦਿਤ ਕਰੋ",
+  "location": "ਸਥਾਨ",
+  "city": "ਸ਼ਹਿਰ",
+  "updateFromGps": "GPS ਤੋਂ ਅਪਡੇਟ ਕਰੋ",
+  "saveChanges": "ਬਦਲਾਅ ਸੰਭਾਲੋ"
 }

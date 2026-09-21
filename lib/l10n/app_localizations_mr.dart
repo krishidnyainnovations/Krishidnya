@@ -290,6 +290,9 @@ class AppLocalizationsMr extends AppLocalizations {
   String get passwordsNoMatch => 'पासवर्ड जुळत नाही';
 
   @override
+  String get confirmPasswordRequired => 'Please confirm your password';
+
+  @override
   String get enterPassword => 'कृपया आपला पासवर्ड प्रविष्ट करा';
 
   @override
@@ -858,4 +861,28 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get askAnythingAboutFarming => 'शेतीबद्दल काहीही प्रश्न विचारा';
+
+  @override
+  String get profileUpdated => 'प्रोफाइल अपडेट झाले';
+
+  @override
+  String get locationPermissionDenied => 'स्थान परवाना नाकारले';
+
+  @override
+  String get locationUpdatedFromGps => 'GPS पासून स्थान अपडेट झाले';
+
+  @override
+  String get editProfile => 'प्रोफाइल संपादित करा';
+
+  @override
+  String get location => 'स्थान';
+
+  @override
+  String get city => 'शहर';
+
+  @override
+  String get updateFromGps => 'GPS पासून अपडेट करा';
+
+  @override
+  String get saveChanges => 'परिवर्तन सहेजा';
 }

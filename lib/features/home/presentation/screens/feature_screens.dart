@@ -1,14 +1,10 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:cropdoc/core/errors/exception_mapper.dart';
 import 'package:cropdoc/core/theme/app_colors.dart';
 import 'package:cropdoc/core/theme/app_spacing.dart';
+import 'package:cropdoc/features/auth/domain/entities/user.dart';
 import 'package:cropdoc/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:cropdoc/features/home/data/home_repository.dart';
 import 'package:cropdoc/features/home/data/local_farm_storage.dart';
@@ -20,6 +16,11 @@ import 'package:cropdoc/widgets/buttons/primary_button.dart';
 import 'package:cropdoc/widgets/feedback/app_snackbar.dart';
 import 'package:cropdoc/widgets/feedback/empty_state_widget.dart';
 import 'package:cropdoc/widgets/inputs/app_text_field.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -576,7 +577,7 @@ class _ScanResultCard extends StatelessWidget {
         ],
 
         // Disease Information
-        if (result.diseaseDetected == true ||
+        if ((result.diseaseDetected ?? false) ||
             result.disease != 'Analysis Result') ...[
           Card(
             color: AppColors.error.withValues(alpha: 0.08),

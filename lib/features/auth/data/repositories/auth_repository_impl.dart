@@ -68,14 +68,15 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final username = UsernameGenerator.fromFullName(fullName);
       final locationString =
-          location?.displayLocation.isNotEmpty ?? false
-              ? location!.displayLocation
+          (location != null && location.displayLocation.isNotEmpty)
+              ? location.displayLocation
               : 'India';
 
       _logger.info(
         'AuthRepo',
         'Register attempt',
-        details: 'username=$username mobile=$mobile location=$locationString',
+        details:
+            'username=$username mobile=$mobile location=$locationString email=$email',
       );
 
       final request = RegisterRequest(

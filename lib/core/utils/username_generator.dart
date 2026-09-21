@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' show Random;
 
 /// Generates unique usernames from full names.
 /// Example: "Tejas Barguje" → "tejas_barguje"
@@ -10,7 +10,14 @@ abstract final class UsernameGenerator {
         .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
         .replaceAll(RegExp(r'\s+'), '_');
 
-    return normalized.isEmpty ? 'farmer' : normalized;
+    // Handle empty or too short usernames
+    if (normalized.isEmpty || normalized.length < 3) {
+      // Use a simple numeric suffix instead of DateTime
+      final randomNum = Random().nextInt(999999);
+      return 'farmer_$randomNum';
+    }
+
+    return normalized;
   }
 
   /// Generates alternative username if the base is taken.

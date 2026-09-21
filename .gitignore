@@ -50,3 +50,10 @@ app.*.map.json
 # Environment
 .env
 .env.*
+
+# Keystore files (DO NOT COMMIT)
+*.jks
+*.keystore
+android/keystore.properties
+android/upload-keystore.jks
+android/upload_certificate.pem

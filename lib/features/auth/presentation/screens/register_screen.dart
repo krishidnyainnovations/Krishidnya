@@ -113,7 +113,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   prefixIcon: const Icon(Icons.email_outlined),
                   autofillHints: const [AutofillHints.email],
                   validator: (v) {
-                    if (v == null || !v.contains('@')) {
+                    // Email is optional, but if provided, validate format
+                    if (v != null && v.trim().isNotEmpty && !v.contains('@')) {
                       return l10n.validEmail;
                     }
                     return null;
@@ -154,14 +155,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                   ),
                   validator: (v) {
-                    if (v == null || v.length < 8) {
+                    if (v == null || v.length < 6) {
                       return l10n.passwordMinLength;
-                    }
-                    if (!v.contains(RegExp(r'[A-Z]')) ||
-                        !v.contains(RegExp(r'[a-z]')) ||
-                        !v.contains(RegExp(r'[0-9]')) ||
-                        !v.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
-                      return "Password must contain uppercase, lowercase, number, and special character";
                     }
                     return null;
                   },
@@ -184,6 +179,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
                   validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return l10n.confirmPasswordRequired;
+                    }
                     if (v != _passwordController.text) {
                       return l10n.passwordsNoMatch;
                     }

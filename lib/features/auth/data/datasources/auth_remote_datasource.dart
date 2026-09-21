@@ -29,6 +29,10 @@ class AuthRemoteDataSource {
       data: request.toJson(),
     );
 
+    if (registerResponse.data == null) {
+      throw Exception('Registration returned no data');
+    }
+
     final user = User.fromJson(registerResponse.data!);
     _logger.info(
       'Auth',
@@ -86,8 +90,18 @@ class AuthRemoteDataSource {
   }
 
   Future<bool> isAuthenticated() async {
-    final token = await _storage.read(AppConstants.accessTokenKey);
-    return token != null && token.isNotEmpty;
+    try {
+      final token = await _storage.read(AppConstants.accessTokenKey);
+      return token != null && token.isNotEmpty;
+    } catch (e, st) {
+      _logger.error(
+        'Auth',
+        'Failed to check authentication status',
+        error: e,
+        stackTrace: st,
+      );
+      return false;
+    }
   }
 
   Future<AuthResponse> _loginAfterRegister({
@@ -114,6 +128,10 @@ class AuthRemoteDataSource {
       data: request.toFormData(),
     );
 
+    if (response.data == null) {
+      throw Exception('Token response returned no data');
+    }
+
     final token = TokenResponse.fromJson(response.data!);
     if (token.accessToken.isEmpty) {
       throw Exception('Empty access token received from server');
@@ -127,6 +145,11 @@ class AuthRemoteDataSource {
     final response = await _apiClient.get<Map<String, dynamic>>(
       ApiConfig.currentUser,
     );
+
+    if (response.data == null) {
+      return null;
+    }
+
     return User.fromJson(response.data!);
   }
 

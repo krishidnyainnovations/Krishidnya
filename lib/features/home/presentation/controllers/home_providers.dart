@@ -1,13 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cropdoc/core/config/providers.dart';
 import 'package:cropdoc/core/errors/exception_mapper.dart';
 import 'package:cropdoc/core/services/local_preferences_service.dart';
+import 'package:cropdoc/core/storage/preferences_service.dart';
 import 'package:cropdoc/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:cropdoc/features/home/data/home_repository.dart';
 import 'package:cropdoc/features/home/data/local_farm_storage.dart';
 import 'package:cropdoc/features/home/domain/entities/feature_models.dart';
 import 'package:cropdoc/features/home/domain/entities/home_entities.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final homeRemoteDataSourceProvider = Provider<HomeRemoteDataSource>((ref) {
   return HomeRemoteDataSource(
@@ -59,7 +60,9 @@ final appLocaleProvider = StateNotifierProvider<AppLocaleNotifier, Locale>((
 
 class AppLocaleNotifier extends StateNotifier<Locale> {
   AppLocaleNotifier(this._ref) : super(const Locale('en')) {
-    _load();
+    // Don't load preferences during initialization to prevent crashes
+    // Load them asynchronously after the app is built
+    Future.microtask(_load);
   }
 
   final Ref _ref;
@@ -68,7 +71,9 @@ class AppLocaleNotifier extends StateNotifier<Locale> {
     try {
       final prefs = await _ref.read(localePreferencesProvider.future);
       final code = prefs.getLocaleCode();
-      if (code != null) state = Locale(code);
+      if (code != null && code.isNotEmpty) {
+        state = Locale(code);
+      }
     } catch (e) {
       // Silently fall back to English if preferences fail
       _ref
@@ -126,18 +131,18 @@ final schemesProvider = FutureProvider<List<Scheme>>((ref) async {
       .getSchemes(search: search.isEmpty ? null : search, type: type);
   return switch (result) {
     Success(:final data) => data,
-    ErrorResult(:final failure) => throw failure,
+    ErrorResult() => [], // Return empty list on error
   };
 });
 
-final schemeDetailProvider = FutureProvider.family<Scheme, int>((
+final schemeDetailProvider = FutureProvider.family<Scheme?, int>((
   ref,
   id,
 ) async {
   final result = await ref.watch(homeRepositoryProvider).getScheme(id);
   return switch (result) {
     Success(:final data) => data,
-    ErrorResult(:final failure) => throw failure,
+    ErrorResult() => null, // Return null on error
   };
 });
 
@@ -148,8 +153,6 @@ final homeWeatherProvider = FutureProvider<WeatherSummary>((ref) async {
     return const WeatherSummary(
       temperature: '--°C',
       condition: 'Location not set',
-      humidity: null,
-      windSpeed: null,
       location: 'Your Farm',
       icon: 'question',
     );
@@ -168,8 +171,6 @@ final homeWeatherProvider = FutureProvider<WeatherSummary>((ref) async {
     ErrorResult() => const WeatherSummary(
       temperature: '--°C',
       condition: 'Weather unavailable',
-      humidity: null,
-      windSpeed: null,
       location: 'Your Farm',
       icon: 'question',
     ),
@@ -183,26 +184,27 @@ final productsProvider = FutureProvider<List<Product>>((ref) async {
       .getProducts(state: user?.state);
   return switch (result) {
     Success(:final data) => data,
-    ErrorResult(:final failure) => throw failure,
+    ErrorResult() => [], // Return empty list on error
   };
 });
 
-final productDetailProvider = FutureProvider.family<Product, int>((
+final productDetailProvider = FutureProvider.family<Product?, int>((
   ref,
   id,
 ) async {
   final products = await ref.watch(productsProvider.future);
-  return products.firstWhere(
-    (p) => p.id == id,
-    orElse: () => throw StateError('Product #$id not found'),
-  );
+  try {
+    return products.firstWhere((p) => p.id == id);
+  } catch (e) {
+    return null; // Return null if product not found
+  }
 });
 
 final communityPostsProvider = FutureProvider<List<CommunityPost>>((ref) async {
   final result = await ref.watch(homeRepositoryProvider).getPosts();
   return switch (result) {
     Success(:final data) => data,
-    ErrorResult(:final failure) => throw failure,
+    ErrorResult() => [], // Return empty list on error
   };
 });
 
@@ -217,7 +219,7 @@ final notificationsProvider = FutureProvider<List<AppNotification>>((
       data
           .map((n) => n.copyWith(isRead: n.isRead || readIds.contains(n.id)))
           .toList(),
-    ErrorResult(:final failure) => throw failure,
+    ErrorResult() => [], // Return empty list on error
   };
 });
 
@@ -232,7 +234,7 @@ final nearbyFarmersProvider = FutureProvider<List<NearbyFarmer>>((ref) async {
       .getNearbyUsers(latitude: user!.latitude, longitude: user.longitude);
   return switch (result) {
     Success(:final data) => data,
-    ErrorResult(:final failure) => [],
+    ErrorResult() => [],
   };
 });
 

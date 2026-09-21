@@ -1,6 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:cropdoc/core/api/api_config.dart';
 import 'package:cropdoc/core/config/providers.dart';
 import 'package:cropdoc/core/l10n/locale_config.dart';
@@ -10,6 +7,8 @@ import 'package:cropdoc/core/theme/app_theme.dart';
 import 'package:cropdoc/features/home/presentation/controllers/home_providers.dart';
 import 'package:cropdoc/l10n/app_localizations.dart';
 import 'package:cropdoc/widgets/ads/home_ad_banner.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -72,29 +71,8 @@ class _KrishidnyaAppState extends ConsumerState<KrishidnyaApp> {
   @override
   void initState() {
     super.initState();
-    // Defer health check to avoid blocking app startup
-    Future.microtask(_checkBackendHealth);
-  }
-
-  Future<void> _checkBackendHealth() async {
-    final logger = ref.read(appLoggerProvider);
-    try {
-      final client = ref.read(apiClientProvider);
-      final response = await client.get<Map<String, dynamic>>('/health');
-      logger.info(
-        'App',
-        'Backend health check OK',
-        details: response.data.toString(),
-      );
-    } catch (e, st) {
-      logger.error(
-        'App',
-        'Backend health check failed',
-        details: 'Could not reach ${ApiConfig.baseUrl}/health',
-        error: e,
-        stackTrace: st,
-      );
-    }
+    // Skip backend health check on startup to prevent crashes
+    // It will be checked when user tries to access features that need it
   }
 
   @override
@@ -135,7 +113,7 @@ class _KrishidnyaAppState extends ConsumerState<KrishidnyaApp> {
                 const Text('App initialization failed'),
                 const SizedBox(height: 8),
                 Text(
-                  'Error: ${e.toString()}',
+                  'Error: $e',
                   style: const TextStyle(fontSize: 12),
                   textAlign: TextAlign.center,
                 ),

@@ -1,6 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -103,20 +103,26 @@ class _SchemesScreenState extends ConsumerState<SchemesScreen> {
                                   .state = null,
                     ),
                     const SizedBox(width: AppSpacing.xs),
-                    ...types.map(
-                      (t) => Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.xs),
-                        child: FilterChip(
-                          label: Text(t),
-                          selected: typeFilter == t,
-                          onSelected:
-                              (_) =>
-                                  ref
-                                      .read(schemesTypeFilterProvider.notifier)
-                                      .state = t,
-                        ),
-                      ),
-                    ),
+                    ...types
+                        .map<Widget>(
+                          (t) => Padding(
+                            padding: const EdgeInsets.only(
+                              right: AppSpacing.xs,
+                            ),
+                            child: FilterChip(
+                              label: Text(t),
+                              selected: typeFilter == t,
+                              onSelected:
+                                  (_) =>
+                                      ref
+                                          .read(
+                                            schemesTypeFilterProvider.notifier,
+                                          )
+                                          .state = t,
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ],
                 ),
               );
@@ -166,10 +172,11 @@ class _SchemeCard extends ConsumerWidget {
   Future<void> _showApplySheet(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
     final nameController = TextEditingController(
-      text: ref.read(currentUserProvider).valueOrNull?.fullName ?? '',
+      text:
+          ref.read(currentUserProvider).valueOrNull?.fullName.toString() ?? '',
     );
     final mobileController = TextEditingController(
-      text: ref.read(currentUserProvider).valueOrNull?.mobile ?? '',
+      text: ref.read(currentUserProvider).valueOrNull?.mobile.toString() ?? '',
     );
     final villageController = TextEditingController();
     var isLoading = false;

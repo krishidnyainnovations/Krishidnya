@@ -103,6 +103,7 @@
   "validMobileLogin": "தயவு செய்து சரியான 10-இலக்க மொபைல் எண்ணை உள்ளிடவும்",
   "passwordMinLength": "கடவுச்சொல் குறைந்தது 6 எழுத்துகள் இருக்க வேண்டும்",
   "passwordsNoMatch": "கடவுச்சொற்கள் பொருந்தவில்லை",
+  "confirmPasswordRequired": "தயவு செய்து உங்கள் கடவுச்சொல்லை உறுதிப்படுத்தவும்",
   "enterPassword": "தயவு செய்து உங்கள் கடவுச்சொல்லை உள்ளிடவும்",
   "fullNameHint": "எ.கா. தேஜஸ் பர்குஜே",
   "emailHint": "your@email.com",
@@ -284,5 +285,13 @@
   "profileTitle": "சுயவிவரம்",
   "cropdocAI": "கிருஷிதnya AI",
   "askAnythingAboutFarming": "விவசாயம் பற்றி எதுவும் கேளுங்கள்",
-  "krishidnyaAI": "கிருஷிதnya AI"
+  "krishidnyaAI": "கிருஷிதnya AI",
+  "profileUpdated": "சுயவிவரம் புதுப்பிக்கப்பட்டது",
+  "locationPermissionDenied": "இருப்பிடம் அனுமதி மறுக்கப்பட்டது",
+  "locationUpdatedFromGps": "GPS இலிருந்து இருப்பிடம் புதுப்பிக்கப்பட்டது",
+  "editProfile": "சுயவிவரத்தைத் திருத்து",
+  "location": "இருப்பிடம்",
+  "city": "நகரம்",
+  "updateFromGps": "GPS இலிருந்து புதுப்பிக்கவும்",
+  "saveChanges": "மாற்றங்களை சேமி"
 }

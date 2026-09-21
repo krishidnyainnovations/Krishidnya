@@ -290,6 +290,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordsNoMatch => 'Passwords do not match';
 
   @override
+  String get confirmPasswordRequired => 'Please confirm your password';
+
+  @override
   String get enterPassword => 'Please enter your password';
 
   @override
@@ -857,4 +860,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get askAnythingAboutFarming => 'Ask anything about farming';
+
+  @override
+  String get profileUpdated => 'Profile updated';
+
+  @override
+  String get locationPermissionDenied => 'Location permission denied';
+
+  @override
+  String get locationUpdatedFromGps => 'Location updated from GPS';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get location => 'Location';
+
+  @override
+  String get city => 'City';
+
+  @override
+  String get updateFromGps => 'Update from GPS';
+
+  @override
+  String get saveChanges => 'Save Changes';
 }

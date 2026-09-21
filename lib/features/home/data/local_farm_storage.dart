@@ -12,11 +12,11 @@ class FarmExpense {
   });
 
   factory FarmExpense.fromJson(Map<String, dynamic> json) => FarmExpense(
-        type: json['type'] as String? ?? '',
-        date: json['date'] as String? ?? '',
-        description: json['description'] as String? ?? '',
-        amount: (json['amount'] as num?)?.toDouble() ?? 0,
-      );
+    type: json['type'] as String? ?? '',
+    date: json['date'] as String? ?? '',
+    description: json['description'] as String? ?? '',
+    amount: (json['amount'] as num?)?.toDouble() ?? 0,
+  );
 
   final String type;
   final String date;
@@ -24,11 +24,11 @@ class FarmExpense {
   final double amount;
 
   Map<String, dynamic> toJson() => {
-        'type': type,
-        'date': date,
-        'description': description,
-        'amount': amount,
-      };
+    'type': type,
+    'date': date,
+    'description': description,
+    'amount': amount,
+  };
 }
 
 /// A crop tracked in farm analytics.
@@ -44,17 +44,18 @@ class FarmCrop {
   });
 
   factory FarmCrop.fromJson(Map<String, dynamic> json) => FarmCrop(
-        id: json['id'] as String? ?? '',
-        name: json['name'] as String? ?? '',
-        area: (json['area'] as num?)?.toDouble() ?? 0,
-        sowingDate: json['sowingDate'] as String? ?? '',
-        expenses: (json['expenses'] as List<dynamic>?)
-                ?.map((e) => FarmExpense.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [],
-        sellingValue: (json['sellingValue'] as num?)?.toDouble(),
-        harvestDate: json['harvestDate'] as String?,
-      );
+    id: json['id'] as String? ?? '',
+    name: json['name'] as String? ?? '',
+    area: (json['area'] as num?)?.toDouble() ?? 0,
+    sowingDate: json['sowingDate'] as String? ?? '',
+    expenses:
+        (json['expenses'] as List<dynamic>?)
+            ?.map((e) => FarmExpense.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        [],
+    sellingValue: (json['sellingValue'] as num?)?.toDouble(),
+    harvestDate: json['harvestDate'] as String?,
+  );
 
   final String id;
   final String name;
@@ -64,14 +65,15 @@ class FarmCrop {
   final double? sellingValue;
   final String? harvestDate;
 
-  double get totalExpenses =>
-      expenses.fold(0, (sum, e) => sum + e.amount);
+  double get totalExpenses => expenses.fold(0, (sum, e) => sum + e.amount);
 
   double? get profit =>
       sellingValue != null ? sellingValue! - totalExpenses : null;
 
   double? get margin =>
-      profit != null && totalExpenses > 0 ? (profit! / totalExpenses) * 100 : null;
+      profit != null && totalExpenses > 0
+          ? (profit! / totalExpenses) * 100
+          : null;
 
   /// Monthly income based on harvest date and selling value.
   double? monthlyIncome(DateTime referenceMonth) {
@@ -94,14 +96,14 @@ class FarmCrop {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'area': area,
-        'sowingDate': sowingDate,
-        'expenses': expenses.map((e) => e.toJson()).toList(),
-        'sellingValue': sellingValue,
-        'harvestDate': harvestDate,
-      };
+    'id': id,
+    'name': name,
+    'area': area,
+    'sowingDate': sowingDate,
+    'expenses': expenses.map((e) => e.toJson()).toList(),
+    'sellingValue': sellingValue,
+    'harvestDate': harvestDate,
+  };
 
   FarmCrop copyWith({
     String? id,
@@ -113,16 +115,16 @@ class FarmCrop {
     String? harvestDate,
     bool clearSellingValue = false,
     bool clearHarvestDate = false,
-  }) =>
-      FarmCrop(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        area: area ?? this.area,
-        sowingDate: sowingDate ?? this.sowingDate,
-        expenses: expenses ?? this.expenses,
-        sellingValue: clearSellingValue ? null : (sellingValue ?? this.sellingValue),
-        harvestDate: clearHarvestDate ? null : (harvestDate ?? this.harvestDate),
-      );
+  }) => FarmCrop(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    area: area ?? this.area,
+    sowingDate: sowingDate ?? this.sowingDate,
+    expenses: expenses ?? this.expenses,
+    sellingValue:
+        clearSellingValue ? null : (sellingValue ?? this.sellingValue),
+    harvestDate: clearHarvestDate ? null : (harvestDate ?? this.harvestDate),
+  );
 }
 
 /// Soil test history entry.
@@ -141,7 +143,8 @@ class SoilHistoryEntry {
         soilType: json['soilType'] as String? ?? '',
         location: json['location'] as String? ?? '',
         summary: json['summary'] as String? ?? '',
-        createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+        createdAt:
+            DateTime.tryParse(json['createdAt'] as String? ?? '') ??
             DateTime.now(),
       );
 
@@ -152,12 +155,12 @@ class SoilHistoryEntry {
   final DateTime createdAt;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'soilType': soilType,
-        'location': location,
-        'summary': summary,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'soilType': soilType,
+    'location': location,
+    'summary': summary,
+    'createdAt': createdAt.toIso8601String(),
+  };
 }
 
 /// History entry for scans and recommendations.
@@ -171,13 +174,13 @@ class HistoryEntry {
   });
 
   factory HistoryEntry.fromJson(Map<String, dynamic> json) => HistoryEntry(
-        id: json['id'] as String? ?? '',
-        type: json['type'] as String? ?? '',
-        title: json['title'] as String? ?? '',
-        summary: json['summary'] as String? ?? '',
-        createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
-            DateTime.now(),
-      );
+    id: json['id'] as String? ?? '',
+    type: json['type'] as String? ?? '',
+    title: json['title'] as String? ?? '',
+    summary: json['summary'] as String? ?? '',
+    createdAt:
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+  );
 
   final String id;
   final String type;
@@ -186,12 +189,12 @@ class HistoryEntry {
   final DateTime createdAt;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'type': type,
-        'title': title,
-        'summary': summary,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'type': type,
+    'title': title,
+    'summary': summary,
+    'createdAt': createdAt.toIso8601String(),
+  };
 }
 
 /// Local persistence for farm analytics and history.
@@ -207,10 +210,14 @@ class LocalFarmStorage {
   List<FarmCrop> getCrops() {
     final raw = _prefs.getString(_cropsKey);
     if (raw == null) return [];
-    final list = jsonDecode(raw) as List<dynamic>;
-    return list
-        .map((e) => FarmCrop.fromJson(e as Map<String, dynamic>))
-        .toList();
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map((e) => FarmCrop.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> saveCrops(List<FarmCrop> crops) async {
@@ -242,11 +249,15 @@ class LocalFarmStorage {
   List<HistoryEntry> getHistory() {
     final raw = _prefs.getString(_historyKey);
     if (raw == null) return [];
-    final list = jsonDecode(raw) as List<dynamic>;
-    return list
-        .map((e) => HistoryEntry.fromJson(e as Map<String, dynamic>))
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map((e) => HistoryEntry.fromJson(e as Map<String, dynamic>))
+          .toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> addHistory(HistoryEntry entry) async {
@@ -260,11 +271,15 @@ class LocalFarmStorage {
   List<SoilHistoryEntry> getSoilHistory() {
     final raw = _prefs.getString(_soilHistoryKey);
     if (raw == null) return [];
-    final list = jsonDecode(raw) as List<dynamic>;
-    return list
-        .map((e) => SoilHistoryEntry.fromJson(e as Map<String, dynamic>))
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map((e) => SoilHistoryEntry.fromJson(e as Map<String, dynamic>))
+          .toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> addSoilHistory(SoilHistoryEntry entry) async {
@@ -287,7 +302,8 @@ class LocalFarmStorage {
         createdAt: s.createdAt,
       ),
     );
-    return [...entries, ...soil]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return [...entries, ...soil]
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   /// Total monthly income from harvested crops in given month.

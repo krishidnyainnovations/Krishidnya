@@ -1,5 +1,3 @@
-import 'package:equatable/equatable.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cropdoc/core/config/providers.dart';
 import 'package:cropdoc/core/errors/exception_mapper.dart';
 import 'package:cropdoc/core/errors/failures.dart';
@@ -7,6 +5,8 @@ import 'package:cropdoc/core/services/location_service.dart';
 import 'package:cropdoc/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:cropdoc/features/auth/domain/entities/location_data.dart';
 import 'package:cropdoc/features/auth/domain/entities/user.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Registration form state held during the multi-step journey.
 class RegistrationState extends Equatable {
@@ -57,7 +57,6 @@ class RegistrationState extends Equatable {
 
   bool get isFormValid =>
       fullName.trim().isNotEmpty &&
-      email.trim().isNotEmpty &&
       mobile.trim().length >= 10 &&
       password.length >= 6 &&
       password == confirmPassword;

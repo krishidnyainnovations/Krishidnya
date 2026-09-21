@@ -3,7 +3,7 @@ abstract final class ApiConfig {
   /// Production backend entrypoint.
   /// Override via --dart-define=API_BASE_URL=...
   static const String baseUrl = String.fromEnvironment(
-    'https://coyness-hastily-enjoyably.ngrok-free.dev',
+    'API_BASE_URL',
     defaultValue: 'https://coyness-hastily-enjoyably.ngrok-free.dev',
   );
 

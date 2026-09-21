@@ -152,7 +152,7 @@ class ScanCropResult {
     final prevention = json['prevention'] as Map<String, dynamic>?;
 
     // Extract organic cure methods
-    List<String> organicMethods = [];
+    var organicMethods = <String>[];
     if (organicTreatment != null) {
       if (organicTreatment['methods'] is List) {
         organicMethods =
@@ -170,7 +170,7 @@ class ScanCropResult {
     }
 
     // Extract chemical fungicides with dosage information
-    List<String> chemicalFungicides = [];
+    var chemicalFungicides = <String>[];
     if (chemicalTreatment != null && chemicalTreatment['fungicides'] is List) {
       chemicalFungicides =
           (chemicalTreatment['fungicides'] as List<dynamic>)
@@ -179,14 +179,14 @@ class ScanCropResult {
     }
 
     // Extract symptoms
-    List<String> symptomsList = [];
+    var symptomsList = <String>[];
     if (json['symptoms'] is List) {
       symptomsList =
           (json['symptoms'] as List<dynamic>).map((e) => e.toString()).toList();
     }
 
     // Extract affected parts
-    List<String> affectedPartsList = [];
+    var affectedPartsList = <String>[];
     if (json['affected_parts'] is List) {
       affectedPartsList =
           (json['affected_parts'] as List<dynamic>)
@@ -195,7 +195,7 @@ class ScanCropResult {
     }
 
     // Extract prevention methods
-    List<String> preventionMethods = [];
+    final preventionMethods = <String>[];
     if (prevention != null) {
       if (prevention['cultural_practices'] is List) {
         preventionMethods.addAll(
@@ -214,16 +214,20 @@ class ScanCropResult {
     }
 
     // Extract recommended products with confidence
-    List<RecommendedProduct> recommendedProductsList = [];
+    final recommendedProductsList = <RecommendedProduct>[];
     if (chemicalTreatment != null && chemicalTreatment['fungicides'] is List) {
       final fungicides = chemicalTreatment['fungicides'] as List<dynamic>;
-      for (var fungicide in fungicides) {
+      for (final fungicide in fungicides) {
         if (fungicide is String) {
-          recommendedProductsList.add(RecommendedProduct(
-            name: fungicide,
-            dosage: chemicalTreatment['tank_mix_compatibility'] as String?,
-            confidence: double.tryParse(json['confidence']?.toString() ?? '0'),
-          ));
+          recommendedProductsList.add(
+            RecommendedProduct(
+              name: fungicide,
+              dosage: chemicalTreatment['tank_mix_compatibility'] as String?,
+              confidence: double.tryParse(
+                json['confidence']?.toString() ?? '0',
+              ),
+            ),
+          );
         }
       }
     }
@@ -258,10 +262,15 @@ class ScanCropResult {
       diseaseDetected: json['disease_detected'] as bool?,
       organicEffectiveness: organicTreatment?['effectiveness'] as String?,
       chemicalEffectiveness: chemicalTreatment?['effectiveness'] as String?,
-      homeRemedies: (organicTreatment?['home_remedies'] as List<dynamic>?)?.cast<String>(),
-      culturalPractices: (prevention?['cultural_practices'] as List<dynamic>?)?.cast<String>(),
+      homeRemedies:
+          (organicTreatment?['home_remedies'] as List<dynamic>?)
+              ?.cast<String>(),
+      culturalPractices:
+          (prevention?['cultural_practices'] as List<dynamic>?)?.cast<String>(),
       cropRotation: prevention?['crop_rotation'] as String?,
-      resistantVarieties: prevention?['resistant_varieties'] as List<dynamic>?.cast<String>(),
+      resistantVarieties:
+          (prevention?['resistant_varieties'] as List<dynamic>?)
+              ?.cast<String>(),
       additionalNotes: json['additional_notes'] as String?,
       economicImpact: json['economic_impact'] as String?,
       spreadRisk: json['spread_risk'] as String?,
@@ -284,7 +293,7 @@ class ScanCropResult {
   final List<String>? treatmentMethods;
   final List<String>? prevention;
   final Map<String, dynamic>? raw;
-  
+
   // New fields from improved backend schema
   final String? diseaseScientificName;
   final String? overallCondition;
@@ -303,11 +312,7 @@ class ScanCropResult {
 
 /// Recommended product with dosage and confidence information
 class RecommendedProduct {
-  const RecommendedProduct({
-    required this.name,
-    this.dosage,
-    this.confidence,
-  });
+  const RecommendedProduct({required this.name, this.dosage, this.confidence});
 
   final String name;
   final String? dosage;
