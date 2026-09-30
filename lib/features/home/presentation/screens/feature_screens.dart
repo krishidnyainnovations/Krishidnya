@@ -267,7 +267,7 @@ class _CropExpandableCard extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor: AppColors.primaryContainer,
           child: Text(
-            crop.name[0].toUpperCase(),
+            crop.name.isNotEmpty ? crop.name[0].toUpperCase() : '?',
             style: const TextStyle(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,
@@ -1342,7 +1342,10 @@ class MarketplaceScreen extends ConsumerWidget {
                                                 backgroundColor:
                                                     AppColors.primaryContainer,
                                                 child: Text(
-                                                  p.category[0].toUpperCase(),
+                                                  p.category.isNotEmpty
+                                                      ? p.category[0]
+                                                          .toUpperCase()
+                                                      : '?',
                                                 ),
                                               ),
                                           errorWidget:
@@ -1350,7 +1353,10 @@ class MarketplaceScreen extends ConsumerWidget {
                                                 backgroundColor:
                                                     AppColors.primaryContainer,
                                                 child: Text(
-                                                  p.category[0].toUpperCase(),
+                                                  p.category.isNotEmpty
+                                                      ? p.category[0]
+                                                          .toUpperCase()
+                                                      : '?',
                                                 ),
                                               ),
                                         ),
@@ -1359,7 +1365,9 @@ class MarketplaceScreen extends ConsumerWidget {
                                         backgroundColor:
                                             AppColors.primaryContainer,
                                         child: Text(
-                                          p.category[0].toUpperCase(),
+                                          p.category.isNotEmpty
+                                              ? p.category[0].toUpperCase()
+                                              : '?',
                                         ),
                                       ),
                               title: Text(p.name),
@@ -1841,7 +1849,7 @@ class _CropAnalyticsCard extends StatelessWidget {
         onTap: onTap,
         leading: CircleAvatar(
           backgroundColor: AppColors.primaryContainer,
-          child: Text(crop.name[0].toUpperCase()),
+          child: Text(crop.name.isNotEmpty ? crop.name[0].toUpperCase() : '?'),
         ),
         title: Text(crop.name),
         subtitle: Text('${crop.area} acres · Sown ${crop.sowingDate}'),

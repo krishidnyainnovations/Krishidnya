@@ -34,56 +34,71 @@ class NearbyFarmersScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.nearbyFarmers)),
       body: farmersAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-        error: (e, _) => EmptyStateWidget(
-          title: l10n.nearbyUnavailable,
-          subtitle: e.toString(),
-          icon: Icons.people_outline,
-        ),
-        data: (farmers) => farmers.isEmpty
-            ? EmptyStateWidget(
-                title: l10n.noFarmersNearby,
-                subtitle: l10n.updateLocationNearby,
-                icon: Icons.people_outline,
-              )
-            : ListView.separated(
-                padding: AppSpacing.screenPadding,
-                itemCount: farmers.length,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, i) {
-                  final f = farmers[i];
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: AppColors.primaryContainer,
-                        child: Text(f.name[0].toUpperCase()),
-                      ),
-                      title: Text(f.name),
-                      subtitle: Text(
-                        [
-                          if (f.location != null) f.location,
-                          if (f.distanceKm != null)
-                            l10n.kmAway(f.distanceKm!.toStringAsFixed(1)),
-                        ].join(' · '),
-                      ),
-                      trailing: f.mobile != null
-                          ? IconButton(
-                              icon: const Icon(Icons.phone_outlined),
-                              tooltip: f.mobile,
-                              onPressed: () =>
-                                  _callFarmer(context, l10n, f.mobile!),
-                            )
-                          : null,
-                      onTap: f.mobile != null
-                          ? () => _callFarmer(context, l10n, f.mobile!)
-                          : null,
+        loading:
+            () => const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+        error:
+            (e, _) => EmptyStateWidget(
+              title: l10n.nearbyUnavailable,
+              subtitle: e.toString(),
+              icon: Icons.people_outline,
+            ),
+        data:
+            (farmers) =>
+                farmers.isEmpty
+                    ? EmptyStateWidget(
+                      title: l10n.noFarmersNearby,
+                      subtitle: l10n.updateLocationNearby,
+                      icon: Icons.people_outline,
+                    )
+                    : ListView.separated(
+                      padding: AppSpacing.screenPadding,
+                      itemCount: farmers.length,
+                      separatorBuilder:
+                          (_, __) => const SizedBox(height: AppSpacing.sm),
+                      itemBuilder: (context, i) {
+                        final f = farmers[i];
+                        return Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppColors.primaryContainer,
+                              child: Text(
+                                f.name.isNotEmpty
+                                    ? f.name[0].toUpperCase()
+                                    : '?',
+                              ),
+                            ),
+                            title: Text(f.name),
+                            subtitle: Text(
+                              [
+                                if (f.location != null) f.location,
+                                if (f.distanceKm != null)
+                                  l10n.kmAway(f.distanceKm!.toStringAsFixed(1)),
+                              ].join(' · '),
+                            ),
+                            trailing:
+                                f.mobile != null
+                                    ? IconButton(
+                                      icon: const Icon(Icons.phone_outlined),
+                                      tooltip: f.mobile,
+                                      onPressed:
+                                          () => _callFarmer(
+                                            context,
+                                            l10n,
+                                            f.mobile!,
+                                          ),
+                                    )
+                                    : null,
+                            onTap:
+                                f.mobile != null
+                                    ? () =>
+                                        _callFarmer(context, l10n, f.mobile!)
+                                    : null,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
       ),
     );
   }

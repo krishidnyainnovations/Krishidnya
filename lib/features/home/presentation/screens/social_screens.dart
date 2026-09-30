@@ -700,7 +700,11 @@ class _PostCardState extends ConsumerState<_PostCard> {
               children: [
                 CircleAvatar(
                   backgroundColor: AppColors.primaryContainer,
-                  child: Text(widget.post.authorName[0].toUpperCase()),
+                  child: Text(
+                    widget.post.authorName.isNotEmpty
+                        ? widget.post.authorName[0].toUpperCase()
+                        : '?',
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
@@ -823,7 +827,9 @@ class ProfileScreen extends ConsumerWidget {
                   radius: 40,
                   backgroundColor: AppColors.primaryContainer,
                   child: Text(
-                    (user?.fullName ?? 'F')[0].toUpperCase(),
+                    (user?.fullName?.isNotEmpty ?? false)
+                        ? user!.fullName![0].toUpperCase()
+                        : 'F',
                     style: const TextStyle(
                       fontSize: 32,
                       color: AppColors.primary,
